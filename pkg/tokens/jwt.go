@@ -12,9 +12,18 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+type TokenType string
+
+const (
+	AccessToken  TokenType = "access"
+	RefreshToken TokenType = "refresh"
+	SessionToken TokenType = "session"
+)
+
 type JWTTokenPayload struct {
 	jwt.RegisteredClaims
-	Scopes []string `json:"scopes,omitempty"`
+	Scopes []string  `json:"scopes,omitempty"`
+	Type   TokenType `json:"type,omitempty"`
 }
 
 // generates a JWT token using the provided Ed25519 private key and payload
@@ -171,4 +180,23 @@ func GenerateTokens(cfg *config.Config, key *ed25519.PrivateKey, user database.G
 	}
 
 	return accessToken, refreshToken, nil
+}
+
+func ValidateJwt(key *ed25519.PrivateKey, token string) (*JWTTokenPayload, error) {
+	parsedToken, err := jwt.ParseWithClaims(token, &JWTTokenPayload{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodEd25519); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
+		}
+		return key.Public(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse token: %w", err)
+	}
+
+	claims, ok := parsedToken.Claims.(*JWTTokenPayload)
+	if !ok || !parsedToken.Valid {
+		return nil, fmt.Errorf("Invalid token")
+	}
+
+	return claims, nil
 }
