@@ -21,13 +21,14 @@ const (
 
 type Config struct {
 	// Application
-	LogLevel       logger.LogLevel
-	Port           string
-	TrustedProxies []string
-	FrontendURLs   []string
-	SaltRounds     int
-	Domain         string
-	Environment    Environment
+	LogLevel          logger.LogLevel
+	Port              string
+	TrustedProxies    []string
+	FrontendURLs      []string
+	SaltRounds        int
+	Domain            string
+	Environment       Environment
+	SessionCookieName string
 	// Database
 	DatabaseURL    string
 	MigrationsPath string
@@ -172,6 +173,9 @@ func LoadDefaultConfig() (*Config, error) {
 		Domain: getEnv("DOMAIN", "localhost", func(value string) bool {
 			_, err := url.Parse(value)
 			return err == nil
+		}, log),
+		SessionCookieName: getEnv("SESSION_COOKIE_NAME", "session_token", func(value string) bool {
+			return value != ""
 		}, log),
 		// Valkey
 		ValkeyURL: getEnv("VALKEY_URL", "", func(value string) bool {

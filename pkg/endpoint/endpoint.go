@@ -7,7 +7,9 @@ import (
 	"easyflow-oauth2-server/pkg/config"
 	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/logger"
+	"easyflow-oauth2-server/pkg/tokens"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -22,6 +24,7 @@ type EndpointUtils[T any] struct {
 	Config         *config.Config
 	Valkey         valkey.Client
 	Key            *ed25519.PrivateKey
+	User           *tokens.JWTTokenPayload
 }
 
 func getPayload[T any](c *gin.Context) (T, error) {
@@ -105,6 +108,20 @@ func getKey(c *gin.Context) (*ed25519.PrivateKey, error) {
 	return key, nil
 }
 
+func getUser(c *gin.Context) (*tokens.JWTTokenPayload, error) {
+	raw_user, ok := c.Get("user")
+	if !ok {
+		return nil, fmt.Errorf("user not found in context")
+	}
+
+	user, ok := raw_user.(*tokens.JWTTokenPayload)
+	if !ok {
+		return nil, fmt.Errorf("type assertion to *tokens.JWTTokenPayload failed")
+	}
+
+	return user, nil
+}
+
 func SetupEndpoint[T any](c *gin.Context) (EndpointUtils[T], []string) {
 	var errs []error
 	var endpointUtils EndpointUtils[T]
@@ -145,13 +162,22 @@ func SetupEndpoint[T any](c *gin.Context) (EndpointUtils[T], []string) {
 		errs = append(errs, err)
 	}
 	endpointUtils.Valkey = valkeyClient
-	
+
 	// Extract Ed25519 Key
 	key, err := getKey(c)
 	if err != nil {
 		errs = append(errs, err)
 	}
 	endpointUtils.Key = key
+
+	// Extract User (if available)
+	user, err := getUser(c)
+	if err != nil {
+		// User might not be set for public endpoints, so we don't append the error
+		endpointUtils.User = nil
+	} else {
+		endpointUtils.User = user
+	}
 
 	var serializableErrors []string
 
@@ -165,4 +191,8 @@ func SetupEndpoint[T any](c *gin.Context) (EndpointUtils[T], []string) {
 	}
 
 	return endpointUtils, serializableErrors
+}
+
+func SendSetupErrorResponse(c *gin.Context, errs []string) {
+	errors.SendErrorResponse(c, http.StatusInternalServerError, errors.InternalServerError, errs)
 }

@@ -13,7 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func register(utils endpoint.EndpointUtils[CreateUserRequestDTO]) (*CreateUserResponseDTO, *errors.ApiError) {
+func register(utils endpoint.EndpointUtils[CreateUserRequest]) (*CreateUserResponse, *errors.ApiError) {
 	// Hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(utils.Payload.Password), utils.Config.SaltRounds)
 	if err != nil {
@@ -48,7 +48,7 @@ func register(utils endpoint.EndpointUtils[CreateUserRequestDTO]) (*CreateUserRe
 	}
 	utils.Logger.PrintfInfo("User with id %s created", user.ID)
 
-	return &CreateUserResponseDTO{
+	return &CreateUserResponse{
 		ID:    user.ID.String(),
 		Email: user.Email,
 		FirstName: func() *string {
@@ -66,7 +66,7 @@ func register(utils endpoint.EndpointUtils[CreateUserRequestDTO]) (*CreateUserRe
 	}, nil
 }
 
-func login(utils endpoint.EndpointUtils[LoginRequestDTO]) (*LoginResponseDTO, *errors.ApiError) {
+func login(utils endpoint.EndpointUtils[LoginRequest]) (*LoginResponse, *errors.ApiError) {
 	user, err := utils.Queries.GetUserByEmail(utils.RequestContext, utils.Payload.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -101,7 +101,7 @@ func login(utils endpoint.EndpointUtils[LoginRequestDTO]) (*LoginResponseDTO, *e
 	// For now, we just issue a short-lived session token.
 	sessionToken, err := tokens.GenerateSessionToken(utils.Config, utils.Key, user)
 
-	return &LoginResponseDTO{
+	return &LoginResponse{
 		SessionToken: sessionToken,
 		ExpiresIn:    utils.Config.JwtSessionTokenExpiryHours * int(time.Hour.Seconds()),
 	}, nil
