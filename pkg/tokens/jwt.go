@@ -151,6 +151,7 @@ func GenerateSessionToken(cfg *config.Config, key *ed25519.PrivateKey, user data
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(cfg.JwtSessionTokenExpiryHours) * time.Hour)),
 		},
+		Type: SessionToken,
 	}
 
 	sessionToken, err := generateJWT(key, sessionTokenPayload)

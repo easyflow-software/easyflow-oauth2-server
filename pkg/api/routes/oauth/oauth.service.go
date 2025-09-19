@@ -27,7 +27,7 @@ func getClient(utils endpoint.EndpointUtils[any], clientId string) (*database.Ge
 		return nil, &errors.ApiError{
 			Code:    http.StatusInternalServerError,
 			Error:   errors.InternalServerError,
-			Details: "Failed to get client",
+			Details: "Failed to get client" + err.Error(),
 		}
 	}
 

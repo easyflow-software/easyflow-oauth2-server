@@ -24,7 +24,7 @@ type Config struct {
 	LogLevel          logger.LogLevel
 	Port              string
 	TrustedProxies    []string
-	FrontendURLs      []string
+	FrontendURL       string
 	SaltRounds        int
 	Domain            string
 	Environment       Environment
@@ -150,7 +150,7 @@ func LoadDefaultConfig() (*Config, error) {
 				}
 				return true
 			}, log),
-		FrontendURLs: getEnvSlice("FRONTEND_URLS", "",
+		FrontendURL: getEnv("FRONTEND_URL", "",
 			func(value string) bool {
 				_, err := url.ParseRequestURI(value)
 				return err == nil

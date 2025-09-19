@@ -5,6 +5,7 @@ import (
 	"easyflow-oauth2-server/pkg/config"
 	"easyflow-oauth2-server/pkg/endpoint"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,7 +47,7 @@ func loginController(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(utils.Config.SessionCookieName, login.SessionToken, utils.Config.JwtSessionTokenExpiryHours, "/", utils.Config.Domain, true, utils.Config.Environment == config.Production)
+	c.SetCookie(utils.Config.SessionCookieName, login.SessionToken, int(time.Duration(utils.Config.JwtSessionTokenExpiryHours)*time.Hour)/int(time.Second), "/", utils.Config.Domain, true, utils.Config.Environment == config.Production)
 
 	c.JSON(http.StatusOK, login)
 }

@@ -25,40 +25,26 @@ func SessionTokenMiddleware() gin.HandlerFunc {
 		sessionToken, err := c.Cookie(utils.Config.SessionCookieName)
 		if err != nil {
 			utils.Logger.PrintfDebug("Error while getting session token cookie: %s", err.Error())
-			c.AbortWithStatusJSON(http.StatusBadRequest, errors.ApiError{
-				Code:  http.StatusBadRequest,
-				Error: errors.InvalidSessionToken,
-			})
+			c.Redirect(http.StatusSeeOther, utils.Config.FrontendURL+"/login?next="+c.Request.URL.Path+"&error="+string(errors.MissingSessionToken))
 			return
 		}
 
 		if sessionToken == "" {
 			utils.Logger.PrintfDebug("No session token provided")
-			c.AbortWithStatusJSON(http.StatusBadRequest, errors.ApiError{
-				Code:  http.StatusBadRequest,
-				Error: errors.InvalidSessionToken,
-			})
+			c.Redirect(http.StatusSeeOther, utils.Config.FrontendURL+"/login?next="+c.Request.URL.Path+"&error="+string(errors.InvalidSessionToken))
 			return
 		}
 
 		payload, err := tokens.ValidateJwt(utils.Key, sessionToken)
 		if err != nil {
 			utils.Logger.PrintfDebug("Error validating session token: %s", err.Error())
-			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.ApiError{
-				Code:    http.StatusUnauthorized,
-				Error:   errors.InvalidSessionToken,
-				Details: err.Error(),
-			})
+			c.Redirect(http.StatusSeeOther, utils.Config.FrontendURL+"/login?next="+c.Request.URL.Path+"&error="+string(errors.InvalidSessionToken))
 			return
 		}
 
 		if payload.Type != tokens.SessionToken {
 			utils.Logger.PrintfDebug("Invalid session token type: %s", payload.Type)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.ApiError{
-				Code:    http.StatusBadRequest,
-				Error:   errors.InvalidSessionToken,
-				Details: "Cannot use other tokens than session tokens for this endpoint",
-			})
+			c.Redirect(http.StatusSeeOther, utils.Config.FrontendURL+"/login?next="+c.Request.URL.Path+"&error="+string(errors.InvalidSessionToken))
 			return
 		}
 

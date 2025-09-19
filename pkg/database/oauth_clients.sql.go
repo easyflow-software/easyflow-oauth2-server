@@ -145,7 +145,7 @@ SELECT
     oc.updated_at,
     ARRAY_AGG(s.name)::TEXT[] as scopes
 FROM oauth_clients oc
-JOIN oauth_clients_scopes ocs ON oc.id = ocs.id
+JOIN oauth_clients_scopes ocs ON oc.id = ocs.oauth_client_id
 JOIN scopes s ON ocs.scope_id = s.id
 WHERE client_id = $1
 GROUP BY 
