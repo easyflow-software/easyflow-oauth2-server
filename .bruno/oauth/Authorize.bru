@@ -1,0 +1,23 @@
+meta {
+  name: Authorize
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/oauth/authorize?client_id=test&redirect_uri=http://localhost/callback&state=test&response_type=code&code_challenge=test
+  body: none
+  auth: inherit
+}
+
+params:query {
+  client_id: test
+  redirect_uri: http://localhost/callback
+  state: test
+  response_type: code
+  code_challenge: test
+}
+
+settings {
+  encodeUrl: true
+}

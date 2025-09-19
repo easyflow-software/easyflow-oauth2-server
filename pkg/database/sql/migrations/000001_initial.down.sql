@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS users_roles;
 DROP TABLE IF EXISTS roles_scopes;
 DROP TABLE IF EXISTS oauth_clients_scopes;
 DROP TABLE IF EXISTS oauth_clients;
+DROP TYPE IF EXISTS grant_types;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS scopes;

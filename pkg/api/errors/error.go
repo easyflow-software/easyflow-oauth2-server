@@ -14,6 +14,7 @@ const (
 	AlreadyExists           ErrorCode = "ALREADY_EXISTS"
 	InternalServerError     ErrorCode = "INTERNAL_SERVER_ERROR"
 	UnsupportedGrantType    ErrorCode = "UNSUPPORTED_GRANT_TYPE"
+	MissingSessionToken     ErrorCode = "MISSING_SESSION_TOKEN"
 	InvalidSessionToken     ErrorCode = "INVALID_SESSION_TOKEN"
 	MissingClientID         ErrorCode = "MISSING_CLIENT_ID"
 	InvalidClientID         ErrorCode = "INVALID_CLIENT_ID"

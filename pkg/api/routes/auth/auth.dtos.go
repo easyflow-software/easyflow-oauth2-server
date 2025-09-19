@@ -1,7 +1,5 @@
 package auth
 
-import "easyflow-oauth2-server/pkg/database"
-
 type CreateUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
@@ -18,10 +16,8 @@ type CreateUserResponse struct {
 }
 
 type LoginRequest struct {
-	Email        string              `json:"email" binding:"required,email"`
-	Password     string              `json:"password" binding:"required"`
-	ClientID     string              `json:"clientId" binding:"required"`
-	ResponseType database.GrantTypes `json:"grantType" binding:"required,oneof=refresh_token code device_code client_credentials pkce"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 type LoginResponse struct {

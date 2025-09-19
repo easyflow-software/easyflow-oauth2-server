@@ -103,6 +103,8 @@ func main() {
 	// Generate the ed25519 key pair for JWT signing from secret
 	key := ed25519.NewKeyFromSeed([]byte(cfg.JwtSecret))
 
+	log.Printf("Generated ed25519 key from secret")
+
 	// Disable Gin debug logs
 	gin.SetMode(gin.ReleaseMode)
 
@@ -121,14 +123,14 @@ func main() {
 	router.RedirectTrailingSlash = true // Automatically handle trailing slashes
 
 	// Set up CORS middleware
-	router.Use(cors.CorsMiddleware(cors.Config{
-		AllowedOrigins:   cfg.FrontendURLs,
+	corsMiddleware := cors.CorsMiddleware(cors.Config{
+		AllowedOrigins:   []string{cfg.FrontendURL},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Length", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
-	}))
+	})
 
 	// Add middleware
 	router.Use(middleware.ConfigMiddleware(cfg))
@@ -139,10 +141,12 @@ func main() {
 
 	// Add endpoints
 	adminEndpoints := router.Group("/admin")
+	adminEndpoints.Use(corsMiddleware)
 	log.PrintfInfo("Registering admin endpoints")
 	admin.RegisterAdminEndpoints(adminEndpoints)
 
 	authEndpoints := router.Group("/auth")
+	authEndpoints.Use(corsMiddleware)
 	log.PrintfInfo("Registering auth endpoints")
 	auth.RegisterAuthEnpoints(authEndpoints)
 
@@ -151,6 +155,7 @@ func main() {
 	oauth.RegisterOAuthEndpoints(oauthEndpoints)
 
 	userEndpoints := router.Group("/user")
+	userEndpoints.Use(corsMiddleware)
 	log.PrintfInfo("Registering user endpoints")
 	user.RegisterUserEndpoints(userEndpoints)
 

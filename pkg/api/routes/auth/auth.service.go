@@ -28,8 +28,8 @@ func register(utils endpoint.EndpointUtils[CreateUserRequest]) (*CreateUserRespo
 	user, err := utils.Queries.CreateUser(utils.RequestContext, database.CreateUserParams{
 		Email:        utils.Payload.Email,
 		PasswordHash: string(hash),
-		FirstName:    sql.NullString{String: *utils.Payload.FirstName, Valid: utils.Payload.FirstName != nil},
-		LastName:     sql.NullString{String: *utils.Payload.LastName, Valid: utils.Payload.LastName != nil},
+		FirstName:    database.StringPtrToNullString(utils.Payload.FirstName),
+		LastName:     database.StringPtrToNullString(utils.Payload.LastName),
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code.Name() == "unique_violation" {
