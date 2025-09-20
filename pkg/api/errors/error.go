@@ -13,7 +13,6 @@ const (
 	NotFound                ErrorCode = "NOT_FOUND"
 	AlreadyExists           ErrorCode = "ALREADY_EXISTS"
 	InternalServerError     ErrorCode = "INTERNAL_SERVER_ERROR"
-	UnsupportedGrantType    ErrorCode = "UNSUPPORTED_GRANT_TYPE"
 	MissingSessionToken     ErrorCode = "MISSING_SESSION_TOKEN"
 	InvalidSessionToken     ErrorCode = "INVALID_SESSION_TOKEN"
 	MissingClientID         ErrorCode = "MISSING_CLIENT_ID"
@@ -25,6 +24,14 @@ const (
 	InvalidState            ErrorCode = "INVALID_STATE"
 	MissingRedirectURI      ErrorCode = "MISSING_REDIRECT_URI"
 	InvalidRedirectURI      ErrorCode = "INVALID_REDIRECT_URI"
+	InvalidContentType      ErrorCode = "INVALID_CONTENT_TYPE"
+	InvalidRequestBody      ErrorCode = "INVALID_REQUEST_BODY"
+	MissingGrantType        ErrorCode = "MISSING_GRANT_TYPE"
+	InvalidGrantType        ErrorCode = "UNSUPPORTED_GRANT_TYPE"
+	MissingCode             ErrorCode = "MISSING_CODE"
+	InvalidCode             ErrorCode = "INVALID_CODE"
+	MissingCodeVerifier     ErrorCode = "MISSING_CODE_VERIFIER"
+	InvalidCodeVerifier     ErrorCode = "INVALID_CODE_VERIFIER"
 )
 
 // Represents a standardized error response for the API

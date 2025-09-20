@@ -3,6 +3,7 @@ package oauth
 import (
 	"easyflow-oauth2-server/pkg/api/errors"
 	"easyflow-oauth2-server/pkg/api/middleware"
+	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/endpoint"
 	"net/http"
 	"net/url"
@@ -15,6 +16,7 @@ func RegisterOAuthEndpoints(r *gin.RouterGroup) {
 	r.Use(middleware.LoggerMiddleware("OAuth"))
 
 	r.GET("/authorize", middleware.SessionTokenMiddleware(), authorizeController)
+	r.POST("/token")
 
 }
 
@@ -117,4 +119,82 @@ func authorizeController(c *gin.Context) {
 	uri.RawQuery = q.Encode()
 
 	c.Redirect(http.StatusFound, uri.String())
+}
+
+func tokenController(c *gin.Context) {
+	utils, errs := endpoint.SetupEndpoint[any](c)
+	if len(errs) > 0 {
+		endpoint.SendSetupErrorResponse(c, errs)
+		return
+	}
+
+	contentType := c.GetHeader("Content-Type")
+	if contentType != "application/x-www-form-urlencoded" {
+		errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidContentType, "The Content-Type header must be application/x-www-form-urlencoded")
+		return
+	}
+
+	if err := c.Request.ParseForm(); err != nil {
+		errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidRequestBody, "Failed to parse request body")
+		return
+	}
+
+	grantType := c.Request.FormValue("grant_type")
+	if grantType == "" {
+		errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingGrantType, "The grant_type parameter is required")
+		return
+	}
+
+	switch grantType {
+	case "authorization_code":
+		clientID := c.Request.FormValue("client_id")
+		if clientID == "" {
+			errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingClientID, "The client_id parameter is required")
+			return
+		}
+		client, err := getClient(utils, clientID)
+		if err != nil {
+			c.JSON(err.Code, err)
+			return
+		}
+		if !client.IsPublic.Valid || !client.IsPublic.Bool {
+			errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidClientID, "The client is not a public client and cannot use PKCE")
+			return
+		}
+		if !slices.Contains(client.GrantTypes, database.GrantTypesAuthorizationCode) {
+			errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidClientID, "The client is not authorized to use the authorization_code grant type")
+		}
+
+		code := c.Request.FormValue("code")
+		if code == "" {
+			errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingCode, "The code parameter is required")
+			return
+		}
+		codeVerifier := c.Request.FormValue("code_verifier")
+		if codeVerifier == "" {
+			errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingCodeVerifier, "The code_verifier parameter is required")
+			return
+		}
+
+		accessToken, refreshToken, scopes, err := authorizationCodeFlow(utils, client, code, codeVerifier)
+		if err != nil {
+			c.JSON(err.Code, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, AuthorizationCodeTokenResponse{
+			AccessToken:           *accessToken,
+			AccessTokenExpiresIn:  utils.Config.JwtAccessTokenExpiryMinutes * 60,
+			RefreshToken:          *refreshToken,
+			RefreshTokenExpiresIn: utils.Config.JwtRefreshTokenExpiryDays * 24 * 60 * 60,
+			Scopes:                scopes,
+		})
+
+	case "client_credentials":
+		c.JSON(http.StatusNotImplemented, gin.H{"message": "client_credentials grant type is not implemented yet"})
+	case "refresh_token":
+		c.JSON(http.StatusNotImplemented, gin.H{"message": "refresh_token grant type is not implemented yet"})
+	default:
+		errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidGrantType, "The grant_type is not supported")
+	}
 }

@@ -9,34 +9,34 @@ FROM oauth_clients
 WHERE id = $1;
 
 -- name: GetOAuthClientByClientID :one
-SELECT 
-    oc.id, 
-    oc.client_id, 
-    oc.client_secret_hash, 
-    oc.name, 
-    oc.description, 
-    oc.redirect_uris, 
-    oc.grant_types, 
-    oc.is_public, 
-    oc.token_endpoint_auth_method, 
-    oc.created_at, 
+SELECT
+    oc.id,
+    oc.client_id,
+    oc.client_secret_hash,
+    oc.name,
+    oc.description,
+    oc.redirect_uris,
+    oc.grant_types,
+    oc.is_public,
+    oc.token_endpoint_auth_method,
+    oc.created_at,
     oc.updated_at,
-    ARRAY_AGG(s.name)::TEXT[] as scopes
+    COALESCE(ARRAY_AGG(DISTINCT(s.name)), ARRAY[]::TEXT[])::TEXT[] as scopes
 FROM oauth_clients oc
 JOIN oauth_clients_scopes ocs ON oc.id = ocs.oauth_client_id
 JOIN scopes s ON ocs.scope_id = s.id
 WHERE client_id = $1
-GROUP BY 
-    oc.id, 
-    oc.client_id, 
-    oc.client_secret_hash, 
-    oc.name, 
-    oc.description, 
-    oc.redirect_uris, 
-    oc.grant_types, 
-    oc.is_public, 
-    oc.token_endpoint_auth_method, 
-    oc.created_at, 
+GROUP BY
+    oc.id,
+    oc.client_id,
+    oc.client_secret_hash,
+    oc.name,
+    oc.description,
+    oc.redirect_uris,
+    oc.grant_types,
+    oc.is_public,
+    oc.token_endpoint_auth_method,
+    oc.created_at,
     oc.updated_at;
 
 -- name: ListOAuthClients :many
