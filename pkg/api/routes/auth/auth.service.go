@@ -99,7 +99,7 @@ func login(utils endpoint.EndpointUtils[LoginRequest]) (*LoginResponse, *errors.
 
 	// TODO: Implement more robust client handling with session revocation, etc.
 	// For now, we just issue a short-lived session token.
-	sessionToken, err := tokens.GenerateSessionToken(utils.Config, utils.Key, user)
+	sessionToken, err := tokens.GenerateSessionToken(utils.Config, utils.Key, user.ID.String())
 
 	return &LoginResponse{
 		SessionToken: sessionToken,

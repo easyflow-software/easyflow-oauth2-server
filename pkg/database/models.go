@@ -16,11 +16,9 @@ import (
 type GrantTypes string
 
 const (
-	GrantTypesCode              GrantTypes = "code"
+	GrantTypesAuthorizationCode GrantTypes = "authorization_code"
 	GrantTypesRefreshToken      GrantTypes = "refresh_token"
 	GrantTypesClientCredentials GrantTypes = "client_credentials"
-	GrantTypesDeviceCode        GrantTypes = "device_code"
-	GrantTypesPkce              GrantTypes = "pkce"
 )
 
 func (e *GrantTypes) Scan(src interface{}) error {
@@ -60,11 +58,9 @@ func (ns NullGrantTypes) Value() (driver.Value, error) {
 
 func (e GrantTypes) Valid() bool {
 	switch e {
-	case GrantTypesCode,
+	case GrantTypesAuthorizationCode,
 		GrantTypesRefreshToken,
-		GrantTypesClientCredentials,
-		GrantTypesDeviceCode,
-		GrantTypesPkce:
+		GrantTypesClientCredentials:
 		return true
 	}
 	return false
@@ -72,11 +68,9 @@ func (e GrantTypes) Valid() bool {
 
 func AllGrantTypesValues() []GrantTypes {
 	return []GrantTypes{
-		GrantTypesCode,
+		GrantTypesAuthorizationCode,
 		GrantTypesRefreshToken,
 		GrantTypesClientCredentials,
-		GrantTypesDeviceCode,
-		GrantTypesPkce,
 	}
 }
 

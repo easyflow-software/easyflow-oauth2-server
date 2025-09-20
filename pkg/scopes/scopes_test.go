@@ -1,4 +1,4 @@
-package tokens
+package scopes
 
 import (
 	"reflect"
@@ -175,7 +175,7 @@ func TestFilterScopes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := filterScopes(tt.userScopes, tt.clientScopes)
+			result := FilterScopes(tt.userScopes, tt.clientScopes)
 
 			// Sort both slices to make comparison order-independent
 			if !validateResult(result, tt.expected) {
@@ -215,7 +215,7 @@ func TestFilterScopesEdgeCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := filterScopes(tt.userScopes, tt.clientScopes)
+			result := FilterScopes(tt.userScopes, tt.clientScopes)
 			if !validateResult(result, tt.expected) {
 				t.Errorf("filterScopes() = %v, expected %v", result, tt.expected)
 			}

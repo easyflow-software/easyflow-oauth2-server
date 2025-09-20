@@ -65,7 +65,7 @@ CREATE TABLE users_roles (
     PRIMARY KEY (user_id, role_id)
 );
 
-CREATE TYPE grant_types AS ENUM ('code', 'refresh_token', 'client_credentials', 'device_code', 'pkce');
+CREATE TYPE grant_types AS ENUM ('authorization_code', 'refresh_token', 'client_credentials');
 
 CREATE TABLE oauth_clients (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
