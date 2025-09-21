@@ -5,5 +5,5 @@ type AuthorizationCodeTokenResponse struct {
 	AccessTokenExpiresIn  int      `json:"expires_in"` // lifetime in seconds of the access token
 	RefreshToken          string   `json:"refresh_token,omitempty"`
 	RefreshTokenExpiresIn int      `json:"refresh_token_expires_in,omitempty"` // lifetime in seconds of the refresh token
-	Scopes                []string `json:"scopes,omitempty"`
+	Scopes                []string `json:"scopes"`
 }

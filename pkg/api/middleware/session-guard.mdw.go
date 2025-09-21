@@ -26,12 +26,14 @@ func SessionTokenMiddleware() gin.HandlerFunc {
 		if err != nil {
 			utils.Logger.PrintfDebug("Error while getting session token cookie: %s", err.Error())
 			c.Redirect(http.StatusSeeOther, utils.Config.FrontendURL+"/login?next="+c.Request.URL.Path+"&error="+string(errors.MissingSessionToken))
+			c.Abort()
 			return
 		}
 
 		if sessionToken == "" {
 			utils.Logger.PrintfDebug("No session token provided")
 			c.Redirect(http.StatusSeeOther, utils.Config.FrontendURL+"/login?next="+c.Request.URL.Path+"&error="+string(errors.InvalidSessionToken))
+			c.Abort()
 			return
 		}
 
@@ -39,12 +41,14 @@ func SessionTokenMiddleware() gin.HandlerFunc {
 		if err != nil {
 			utils.Logger.PrintfDebug("Error validating session token: %s", err.Error())
 			c.Redirect(http.StatusSeeOther, utils.Config.FrontendURL+"/login?next="+c.Request.URL.Path+"&error="+string(errors.InvalidSessionToken))
+			c.Abort()
 			return
 		}
 
 		if payload.Type != tokens.SessionToken {
 			utils.Logger.PrintfDebug("Invalid session token type: %s", payload.Type)
 			c.Redirect(http.StatusSeeOther, utils.Config.FrontendURL+"/login?next="+c.Request.URL.Path+"&error="+string(errors.InvalidSessionToken))
+			c.Abort()
 			return
 		}
 

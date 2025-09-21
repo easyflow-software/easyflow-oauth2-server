@@ -48,7 +48,7 @@ func authorize(utils endpoint.EndpointUtils[any], client *database.GetOAuthClien
 
 	var queries valkey.Commands
 
-	queries = append(queries, utils.Valkey.B().Hset().Key(key).FieldValue().FieldValue("codeChallange", codeChallange).FieldValue("clientId", client.ClientID).FieldValue("userId", utils.User.ID).FieldValue("scopes", strings.Join(client.Scopes, " ")).Build())
+	queries = append(queries, utils.Valkey.B().Hset().Key(key).FieldValue().FieldValue("codeChallange", codeChallange).FieldValue("clientId", client.ClientID).FieldValue("userId", utils.User.Subject).FieldValue("scopes", strings.Join(client.Scopes, " ")).Build())
 	queries = append(queries, utils.Valkey.B().Expire().Key(key).Seconds(600).Build())
 	res := utils.Valkey.DoMulti(utils.RequestContext, queries...)
 	if slices.ContainsFunc(res, func(r valkey.ValkeyResult) bool {
