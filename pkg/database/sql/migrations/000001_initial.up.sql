@@ -76,7 +76,7 @@ CREATE TABLE oauth_clients (
     name TEXT NOT NULL,
     description TEXT,
     redirect_uris TEXT[] NOT NULL, -- Array of allowed redirect URIs
-    grant_types grant_types[] DEFAULT ARRAY['code'::grant_types],
+    grant_types grant_types[] DEFAULT ARRAY['authorization_code'::grant_types],
     is_public BOOLEAN DEFAULT FALSE, -- True for PKCE clients
     token_endpoint_auth_method TEXT DEFAULT 'client_secret_basic'
 );

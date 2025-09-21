@@ -21,7 +21,7 @@ SELECT
     oc.token_endpoint_auth_method,
     oc.created_at,
     oc.updated_at,
-    COALESCE(ARRAY_AGG(DISTINCT(s.name)), ARRAY[]::TEXT[])::TEXT[] as scopes
+    COALESCE(ARRAY_AGG(DISTINCT(s.name)) FILTER (WHERE s.name IS NOT NULL), ARRAY[]::TEXT[])::TEXT[] as scopes
 FROM oauth_clients oc
 JOIN oauth_clients_scopes ocs ON oc.id = ocs.oauth_client_id
 JOIN scopes s ON ocs.scope_id = s.id

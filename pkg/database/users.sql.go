@@ -144,8 +144,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 
 const getUserWithRolesAndScopes = `-- name: GetUserWithRolesAndScopes :one
 SELECT u.id, u.email, u.first_name, u.last_name, u.created_at, u.updated_at,
-       COALESCE(array_agg(DISTINCT r.name), ARRAY[]::TEXT[])::TEXT[] as roles,
-       COALESCE(array_agg(DISTINCT s.name), ARRAY[]::TEXT[])::TEXT[] as scopes
+       COALESCE(array_agg(DISTINCT r.name) FILTER (WHERE r.name IS NOT NULL), ARRAY[]::TEXT[])::TEXT[] as roles,
+       COALESCE(array_agg(DISTINCT s.name) FILTER (WHERE s.name IS NOT NULL), ARRAY[]::TEXT[])::TEXT[] as scopes
 FROM users u
 LEFT JOIN users_roles ur ON u.id = ur.user_id
 LEFT JOIN roles r ON ur.role_id = r.id

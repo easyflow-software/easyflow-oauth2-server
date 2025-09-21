@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/ed25519"
+	"crypto/x509"
 	"easyflow-oauth2-server/pkg/api/middleware"
 	"easyflow-oauth2-server/pkg/api/routes/admin"
 	"easyflow-oauth2-server/pkg/api/routes/auth"
@@ -11,6 +12,7 @@ import (
 	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/logger"
 	"easyflow-oauth2-server/pkg/retry"
+	"encoding/pem"
 	"fmt"
 	"os"
 	"time"
@@ -104,6 +106,18 @@ func main() {
 	key := ed25519.NewKeyFromSeed([]byte(cfg.JwtSecret))
 
 	log.Printf("Generated ed25519 key from secret")
+
+	spkiBytes, err := x509.MarshalPKIXPublicKey(key.Public().(ed25519.PublicKey))
+	if err != nil {
+		log.PrintfError("Failed to marshal public key: %v", err)
+		panic(err)
+	}
+	pemBlock := pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: spkiBytes,
+	}
+	pemBytes := pem.EncodeToMemory(&pemBlock)
+	log.Printf("Public Key:\n%s", pemBytes)
 
 	// Disable Gin debug logs
 	gin.SetMode(gin.ReleaseMode)

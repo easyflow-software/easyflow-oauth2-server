@@ -47,7 +47,7 @@ type ApiError struct {
 }
 
 func SendErrorResponse(c *gin.Context, httpCode int, code ErrorCode, details any) {
-	c.JSON(httpCode, ApiError{
+	c.AbortWithStatusJSON(httpCode, ApiError{
 		Code:    httpCode,
 		Error:   code,
 		Details: details,

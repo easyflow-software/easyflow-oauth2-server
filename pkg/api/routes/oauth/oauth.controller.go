@@ -16,7 +16,7 @@ func RegisterOAuthEndpoints(r *gin.RouterGroup) {
 	r.Use(middleware.LoggerMiddleware("OAuth"))
 
 	r.GET("/authorize", middleware.SessionTokenMiddleware(), authorizeController)
-	r.POST("/token")
+	r.POST("/token", tokenController)
 
 }
 
