@@ -184,9 +184,9 @@ func tokenController(c *gin.Context) {
 
 		c.JSON(http.StatusOK, AuthorizationCodeTokenResponse{
 			AccessToken:           *accessToken,
-			AccessTokenExpiresIn:  utils.Config.JwtAccessTokenExpiryMinutes * 60,
+			AccessTokenExpiresIn:  int(client.AccessTokenValidDuration),
 			RefreshToken:          *refreshToken,
-			RefreshTokenExpiresIn: utils.Config.JwtRefreshTokenExpiryDays * 24 * 60 * 60,
+			RefreshTokenExpiresIn: int(client.RefreshTokenValidDuration),
 			Scopes:                scopes,
 		})
 

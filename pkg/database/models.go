@@ -75,17 +75,19 @@ func AllGrantTypesValues() []GrantTypes {
 }
 
 type OauthClient struct {
-	ID                      uuid.UUID
-	CreatedAt               time.Time
-	UpdatedAt               time.Time
-	ClientID                string
-	ClientSecretHash        sql.NullString
-	Name                    string
-	Description             sql.NullString
-	RedirectUris            []string
-	GrantTypes              []GrantTypes
-	IsPublic                sql.NullBool
-	TokenEndpointAuthMethod sql.NullString
+	ID                             uuid.UUID
+	CreatedAt                      time.Time
+	UpdatedAt                      time.Time
+	ClientID                       string
+	ClientSecretHash               sql.NullString
+	Name                           string
+	Description                    sql.NullString
+	RedirectUris                   []string
+	GrantTypes                     []GrantTypes
+	IsPublic                       sql.NullBool
+	AuthorizationCodeValidDuration int32
+	AccessTokenValidDuration       int32
+	RefreshTokenValidDuration      int32
 }
 
 type OauthClientsScope struct {
@@ -108,9 +110,9 @@ type RolesScope struct {
 
 type Scope struct {
 	ID          uuid.UUID
-	Name        string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	Name        string
 	Description sql.NullString
 }
 

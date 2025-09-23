@@ -69,7 +69,7 @@ func GenerateSessionToken(cfg *config.Config, key *ed25519.PrivateKey, userID st
 
 func GenerateTokens(cfg *config.Config, key *ed25519.PrivateKey, userID string, client *database.GetOAuthClientByClientIDRow, scopes []string, sessionID string) (string, string, error) {
 	var accessTokenPayload = generateBasePayload(cfg, userID, client, sessionID)
-	accessTokenPayload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(cfg.JwtAccessTokenExpiryMinutes) * time.Minute))
+	accessTokenPayload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(client.AccessTokenValidDuration) * time.Microsecond))
 	accessTokenPayload.Scopes = scopes
 
 	accessToken, err := generateJWT(key, accessTokenPayload)
@@ -78,7 +78,7 @@ func GenerateTokens(cfg *config.Config, key *ed25519.PrivateKey, userID string, 
 	}
 
 	var refreshTokenPayload = generateBasePayload(cfg, userID, client, sessionID)
-	refreshTokenPayload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(cfg.JwtRefreshTokenExpiryDays) * 24 * time.Hour))
+	refreshTokenPayload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(client.RefreshTokenValidDuration) * time.Microsecond))
 
 	refreshToken, err := generateJWT(key, refreshTokenPayload)
 	if err != nil {

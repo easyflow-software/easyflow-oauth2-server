@@ -6,8 +6,15 @@ meta {
 
 post {
   url: {{BASE_URL}}/oauth/token
-  body: none
+  body: formUrlEncoded
   auth: inherit
+}
+
+body:form-urlencoded {
+  client_id: test
+  grant_type: authorization_code
+  code: MM6C4JYWUN7A47ZRA7UPST6AVI
+  : 
 }
 
 settings {

@@ -1,10 +1,10 @@
 -- name: CreateOAuthClient :one
-INSERT INTO oauth_clients (client_id, client_secret_hash, name, description, redirect_uris, grant_types, is_public, token_endpoint_auth_method)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, client_id, name, description, redirect_uris, grant_types, is_public, token_endpoint_auth_method, created_at, updated_at;
+INSERT INTO oauth_clients (client_id, client_secret_hash, name, description, redirect_uris, grant_types, is_public)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, client_id, name, description, redirect_uris, grant_types, is_public, created_at, updated_at;
 
 -- name: GetOAuthClient :one
-SELECT id, client_id, client_secret_hash, name, description, redirect_uris, grant_types, is_public, token_endpoint_auth_method, created_at, updated_at
+SELECT id, client_id, client_secret_hash, name, description, redirect_uris, grant_types, is_public, created_at, updated_at, authorization_code_valid_duration, access_token_valid_duration, refresh_token_valid_duration, access_token_valid_duration, refresh_token_valid_duration
 FROM oauth_clients
 WHERE id = $1;
 
@@ -18,9 +18,11 @@ SELECT
     oc.redirect_uris,
     oc.grant_types,
     oc.is_public,
-    oc.token_endpoint_auth_method,
     oc.created_at,
     oc.updated_at,
+    oc.authorization_code_valid_duration,
+    oc.access_token_valid_duration,
+    oc.refresh_token_valid_duration,
     COALESCE(ARRAY_AGG(DISTINCT(s.name)) FILTER (WHERE s.name IS NOT NULL), ARRAY[]::TEXT[])::TEXT[] as scopes
 FROM oauth_clients oc
 JOIN oauth_clients_scopes ocs ON oc.id = ocs.oauth_client_id
@@ -35,20 +37,22 @@ GROUP BY
     oc.redirect_uris,
     oc.grant_types,
     oc.is_public,
-    oc.token_endpoint_auth_method,
     oc.created_at,
-    oc.updated_at;
+    oc.updated_at,
+    oc.authorization_code_valid_duration,
+    oc.access_token_valid_duration,
+    oc.refresh_token_valid_duration;
 
 -- name: ListOAuthClients :many
-SELECT id, client_id, name, description, redirect_uris, grant_types, is_public, token_endpoint_auth_method, created_at, updated_at
+SELECT id, client_id, name, description, redirect_uris, grant_types, is_public, created_at, updated_at
 FROM oauth_clients
 ORDER BY name;
 
 -- name: UpdateOAuthClient :one
 UPDATE oauth_clients
-SET name = $2, description = $3, redirect_uris = $4, grant_types = $5, is_public = $6, token_endpoint_auth_method = $7
+SET name = $2, description = $3, redirect_uris = $4, grant_types = $5, is_public = $6
 WHERE id = $1
-RETURNING id, client_id, name, description, redirect_uris, grant_types, is_public, token_endpoint_auth_method, created_at, updated_at;
+RETURNING id, client_id, name, description, redirect_uris, grant_types, is_public, created_at, updated_at;
 
 -- name: UpdateOAuthClientSecret :exec
 UPDATE oauth_clients

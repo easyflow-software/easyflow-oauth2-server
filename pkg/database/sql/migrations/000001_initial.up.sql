@@ -8,9 +8,9 @@ $$ LANGUAGE plpgsql;
 
 CREATE TABLE scopes (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT UNIQUE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    name TEXT UNIQUE NOT NULL,
     description TEXT
 );
 
@@ -78,7 +78,9 @@ CREATE TABLE oauth_clients (
     redirect_uris TEXT[] NOT NULL, -- Array of allowed redirect URIs
     grant_types grant_types[] DEFAULT ARRAY['authorization_code'::grant_types],
     is_public BOOLEAN DEFAULT FALSE, -- True for PKCE clients
-    token_endpoint_auth_method TEXT DEFAULT 'client_secret_basic'
+    authorization_code_valid_duration INTEGER NOT NULL DEFAULT 600, -- in seconds
+    access_token_valid_duration INTEGER NOT NULL DEFAULT 900, -- in seconds
+    refresh_token_valid_duration INTEGER NOT NULL DEFAULT 604800 -- in seconds
 );
 
 CREATE TRIGGER update_oauth_clients_updated_at
