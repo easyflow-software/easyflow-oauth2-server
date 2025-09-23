@@ -165,7 +165,7 @@ func authorizationCodeFlow(utils endpoint.EndpointUtils[any], client *database.G
 	var queries valkey.Commands
 	sessionKey := fmt.Sprintf("session:%s", sessionID.String())
 	queries = append(queries, utils.Valkey.B().Set().Key(sessionKey).Value(sessionID.String()).Build())
-	queries = append(queries, utils.Valkey.B().Expire().Key(sessionKey).Seconds(int64(time.Duration(utils.Config.JwtRefreshTokenExpiryDays)*24*time.Hour/time.Second)).Build())
+	queries = append(queries, utils.Valkey.B().Expire().Key(sessionKey).Seconds(int64(time.Duration(client.RefreshTokenValidDuration) * time.Second)).Build())
 	multiRes := utils.Valkey.DoMulti(utils.RequestContext, queries...)
 	for _, r := range multiRes {
 		if r.Error() != nil {

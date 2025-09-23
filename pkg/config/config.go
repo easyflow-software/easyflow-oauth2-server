@@ -39,8 +39,6 @@ type Config struct {
 	ValkeyClientName string
 	// JWT
 	JwtIssuer                   string
-	JwtAccessTokenExpiryMinutes int    // in minutes
-	JwtRefreshTokenExpiryDays   int    // in days
 	JwtSessionTokenExpiryHours  int    // in hours
 	JwtSecret                   string // Needs to be 32 bytes long (32 characters)
 }
@@ -197,8 +195,6 @@ func LoadDefaultConfig() (*Config, error) {
 		ValkeyClientName: getEnv("VALKEY_CLIENT_NAME", "", func(value string) bool { return value != "" }, log),
 		// JWT
 		JwtIssuer:                   getEnv("JWT_ISSUER", "", func(value string) bool { return value != "" }, log),
-		JwtAccessTokenExpiryMinutes: getEnvInt("JWT_ACCESS_TOKEN_EXPIRY_MINUTES", 15, func(value int) bool { return value > 0 }, log),
-		JwtRefreshTokenExpiryDays:   getEnvInt("JWT_REFRESH_TOKEN_EXPIRY_DAYS", 7, func(value int) bool { return value > 0 }, log),
 		JwtSessionTokenExpiryHours:  getEnvInt("JWT_SESSION_TOKEN_EXPIRY_HOURS", 1, func(value int) bool { return value > 0 }, log),
 		JwtSecret: getEnv("JWT_SECRET", "", func(value string) bool {
 			return len([]byte(value)) == 32
