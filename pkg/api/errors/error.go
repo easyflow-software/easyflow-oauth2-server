@@ -1,3 +1,4 @@
+// Package errors provides standardized error handling for the API.
 package errors
 
 import "github.com/gin-gonic/gin"
@@ -34,8 +35,8 @@ const (
 	InvalidCodeVerifier     ErrorCode = "INVALID_CODE_VERIFIER"
 )
 
-// Represents a standardized error response for the API
-type ApiError struct {
+// APIError represents a standardized error response for the API.
+type APIError struct {
 	// Code represents the HTTP status code
 	Code int `json:"code"`
 
@@ -46,8 +47,9 @@ type ApiError struct {
 	Details any `json:"details,omitempty"`
 }
 
+// SendErrorResponse sends a standardized error response using the Gin context.
 func SendErrorResponse(c *gin.Context, httpCode int, code ErrorCode, details any) {
-	c.AbortWithStatusJSON(httpCode, ApiError{
+	c.AbortWithStatusJSON(httpCode, APIError{
 		Code:    httpCode,
 		Error:   code,
 		Details: details,

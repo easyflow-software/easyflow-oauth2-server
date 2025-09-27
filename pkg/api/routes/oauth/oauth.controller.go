@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RegisterOAuthEndpoints sets up the OAuth2-related endpoints.
 func RegisterOAuthEndpoints(r *gin.RouterGroup) {
 	r.Use(middleware.LoggerMiddleware("OAuth"))
 
@@ -20,7 +21,11 @@ func RegisterOAuthEndpoints(r *gin.RouterGroup) {
 
 }
 
-func redirectWithError(c *gin.Context, redirectURI *url.URL, errorCode, errorDescription, state string) {
+func redirectWithError(
+	c *gin.Context,
+	redirectURI *url.URL,
+	errorCode, errorDescription, state string,
+) {
 	q := redirectURI.Query()
 	q.Add("error", errorCode)
 	if errorDescription != "" {
@@ -43,7 +48,12 @@ func authorizeController(c *gin.Context) {
 	// Extract client_id first to get client info for redirect_uri validation
 	clientID, ok := c.GetQuery("client_id")
 	if !ok || clientID == "" {
-		errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingClientID, "The client_id query parameter is required")
+		errors.SendErrorResponse(
+			c,
+			http.StatusBadRequest,
+			errors.MissingClientID,
+			"The client_id query parameter is required",
+		)
 		return
 	}
 
@@ -54,23 +64,33 @@ func authorizeController(c *gin.Context) {
 	}
 
 	// Extract and validate redirect_uri early
-	redirectUri, ok := c.GetQuery("redirect_uri")
-	if (!ok || redirectUri == "") && len(client.RedirectUris) > 1 {
-		errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingRedirectURI, "The redirect_uri query parameter is required")
+	redirectURI, ok := c.GetQuery("redirect_uri")
+	if (!ok || redirectURI == "") && len(client.RedirectUris) > 1 {
+		errors.SendErrorResponse(
+			c,
+			http.StatusBadRequest,
+			errors.MissingRedirectURI,
+			"The redirect_uri query parameter is required",
+		)
 		return
 	}
 
 	// Use first registered redirect URI if none provided
-	if !ok || redirectUri == "" {
-		redirectUri = client.RedirectUris[0]
-	} else if !slices.Contains(client.RedirectUris, redirectUri) {
+	if !ok || redirectURI == "" {
+		redirectURI = client.RedirectUris[0]
+	} else if !slices.Contains(client.RedirectUris, redirectURI) {
 		errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidRedirectURI, "The provided redirect_uri is not registered for this client")
 		return
 	}
 
-	uri, parseErr := url.ParseRequestURI(redirectUri)
+	uri, parseErr := url.ParseRequestURI(redirectURI)
 	if parseErr != nil {
-		errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidRedirectURI, "The provided redirect_uri is not a valid URI")
+		errors.SendErrorResponse(
+			c,
+			http.StatusBadRequest,
+			errors.InvalidRedirectURI,
+			"The provided redirect_uri is not a valid URI",
+		)
 		return
 	}
 
@@ -80,30 +100,60 @@ func authorizeController(c *gin.Context) {
 		return
 	}
 	if len(state) > 255 {
-		redirectWithError(c, uri, "invalid_request", "The state query parameter must not exceed 255 characters", state)
+		redirectWithError(
+			c,
+			uri,
+			"invalid_request",
+			"The state query parameter must not exceed 255 characters",
+			state,
+		)
 		return
 	}
 
 	// check if client fully supports PKCE
 	if !client.IsPublic.Valid || !client.IsPublic.Bool {
-		redirectWithError(c, uri, "unauthorized_client", "The client is not a public client and cannot use PKCE", state)
+		redirectWithError(
+			c,
+			uri,
+			"unauthorized_client",
+			"The client is not a public client and cannot use PKCE",
+			state,
+		)
 		return
 	}
 
 	responseType, ok := c.GetQuery("response_type")
 	if !ok || responseType == "" {
-		redirectWithError(c, uri, "invalid_request", "The response_type query parameter is required", state)
+		redirectWithError(
+			c,
+			uri,
+			"invalid_request",
+			"The response_type query parameter is required",
+			state,
+		)
 		return
 	}
 
 	if responseType != "code" {
-		redirectWithError(c, uri, "unsupported_response_type", "The /oauth/authorize endpoint only supports the 'code' response type", state)
+		redirectWithError(
+			c,
+			uri,
+			"unsupported_response_type",
+			"The /oauth/authorize endpoint only supports the 'code' response type",
+			state,
+		)
 		return
 	}
 
 	codeChallenge, ok := c.GetQuery("code_challenge")
 	if !ok || codeChallenge == "" {
-		redirectWithError(c, uri, "invalid_request", "The code_challenge query parameter is required", state)
+		redirectWithError(
+			c,
+			uri,
+			"invalid_request",
+			"The code_challenge query parameter is required",
+			state,
+		)
 		return
 	}
 
@@ -130,18 +180,33 @@ func tokenController(c *gin.Context) {
 
 	contentType := c.GetHeader("Content-Type")
 	if contentType != "application/x-www-form-urlencoded" {
-		errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidContentType, "The Content-Type header must be application/x-www-form-urlencoded")
+		errors.SendErrorResponse(
+			c,
+			http.StatusBadRequest,
+			errors.InvalidContentType,
+			"The Content-Type header must be application/x-www-form-urlencoded",
+		)
 		return
 	}
 
 	if err := c.Request.ParseForm(); err != nil {
-		errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidRequestBody, "Failed to parse request body")
+		errors.SendErrorResponse(
+			c,
+			http.StatusBadRequest,
+			errors.InvalidRequestBody,
+			"Failed to parse request body",
+		)
 		return
 	}
 
 	grantType := c.Request.FormValue("grant_type")
 	if grantType == "" {
-		errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingGrantType, "The grant_type parameter is required")
+		errors.SendErrorResponse(
+			c,
+			http.StatusBadRequest,
+			errors.MissingGrantType,
+			"The grant_type parameter is required",
+		)
 		return
 	}
 
@@ -149,7 +214,12 @@ func tokenController(c *gin.Context) {
 	case "authorization_code":
 		clientID := c.Request.FormValue("client_id")
 		if clientID == "" {
-			errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingClientID, "The client_id parameter is required")
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.MissingClientID,
+				"The client_id parameter is required",
+			)
 			return
 		}
 		client, err := getClient(utils, clientID)
@@ -158,31 +228,56 @@ func tokenController(c *gin.Context) {
 			return
 		}
 		if !client.IsPublic.Valid || !client.IsPublic.Bool {
-			errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidClientID, "The client is not a public client and cannot use PKCE")
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.InvalidClientID,
+				"The client is not a public client and cannot use PKCE",
+			)
 			return
 		}
 		if !slices.Contains(client.GrantTypes, database.GrantTypesAuthorizationCode) {
-			errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidClientID, "The client is not authorized to use the authorization_code grant type")
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.InvalidClientID,
+				"The client is not authorized to use the authorization_code grant type",
+			)
 		}
 
 		code := c.Request.FormValue("code")
 		if code == "" {
-			errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingCode, "The code parameter is required")
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.MissingCode,
+				"The code parameter is required",
+			)
 			return
 		}
 		codeVerifier := c.Request.FormValue("code_verifier")
 		if codeVerifier == "" {
-			errors.SendErrorResponse(c, http.StatusBadRequest, errors.MissingCodeVerifier, "The code_verifier parameter is required")
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.MissingCodeVerifier,
+				"The code_verifier parameter is required",
+			)
 			return
 		}
 
-		accessToken, refreshToken, scopes, err := authorizationCodeFlow(utils, client, code, codeVerifier)
+		accessToken, refreshToken, scopes, err := authorizationCodeFlow(
+			utils,
+			client,
+			code,
+			codeVerifier,
+		)
 		if err != nil {
 			c.JSON(err.Code, err)
 			return
 		}
 
-		c.JSON(http.StatusOK, AuthorizationCodeTokenResponse{
+		c.JSON(http.StatusOK, authorizationCodeTokenResponse{
 			AccessToken:           *accessToken,
 			AccessTokenExpiresIn:  int(client.AccessTokenValidDuration),
 			RefreshToken:          *refreshToken,
@@ -191,10 +286,21 @@ func tokenController(c *gin.Context) {
 		})
 
 	case "client_credentials":
-		c.JSON(http.StatusNotImplemented, gin.H{"message": "client_credentials grant type is not implemented yet"})
+		c.JSON(
+			http.StatusNotImplemented,
+			gin.H{"message": "client_credentials grant type is not implemented yet"},
+		)
 	case "refresh_token":
-		c.JSON(http.StatusNotImplemented, gin.H{"message": "refresh_token grant type is not implemented yet"})
+		c.JSON(
+			http.StatusNotImplemented,
+			gin.H{"message": "refresh_token grant type is not implemented yet"},
+		)
 	default:
-		errors.SendErrorResponse(c, http.StatusBadRequest, errors.InvalidGrantType, "The grant_type is not supported")
+		errors.SendErrorResponse(
+			c,
+			http.StatusBadRequest,
+			errors.InvalidGrantType,
+			"The grant_type is not supported",
+		)
 	}
 }

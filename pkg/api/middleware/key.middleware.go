@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Adds the application configuration to the Gin context.
+// KeyMiddlware adds the application configuration to the Gin context.
 // It stores the config in the context for access by subsequent handlers.
 func KeyMiddlware(key *ed25519.PrivateKey) gin.HandlerFunc {
 	return func(c *gin.Context) {

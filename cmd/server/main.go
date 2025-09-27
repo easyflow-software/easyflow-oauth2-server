@@ -1,3 +1,4 @@
+// Package main implements the entrypoint for the OAuth2 server application.
 package main
 
 import (
@@ -13,6 +14,7 @@ import (
 	"easyflow-oauth2-server/pkg/logger"
 	"easyflow-oauth2-server/pkg/retry"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -43,38 +45,64 @@ func main() {
 	}, log, retry.DefaultRetryConfig("sql.Open"))()
 	if err != nil {
 		log.PrintfError("Failed to connect to database: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			log.PrintfError("Failed to close database connection: %v", err)
+			os.Exit(1)
+		}
+	}()
 
 	// Creating migration driver
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		log.PrintfError("Failed to create migration driver: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
-	defer driver.Close()
+	defer func() {
+		err := driver.Close()
+		if err != nil {
+			log.PrintfError("Failed to close migration driver: %v", err)
+			os.Exit(1)
+		}
+	}()
 
 	// Get current working directory
 	pwd, err := os.Getwd()
 	if err != nil {
 		log.PrintfError("Failed to get working directory: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
 
 	// Initialize migrate instance
-	m, err := migrate.NewWithDatabaseInstance(fmt.Sprintf("file://%s/%s", pwd, cfg.MigrationsPath), "postgres", driver)
+	m, err := migrate.NewWithDatabaseInstance(
+		fmt.Sprintf("file://%s/%s", pwd, cfg.MigrationsPath),
+		"postgres",
+		driver,
+	)
 	if err != nil {
 		log.PrintfError("Failed to initialize migrations: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
-	defer m.Close()
+	defer func() {
+		srcErr, dbErr := m.Close()
+		if srcErr != nil {
+			log.PrintfError("Failed to close migration source: %v", srcErr)
+			os.Exit(1)
+		}
+		if dbErr != nil {
+			log.PrintfError("Failed to close migration database: %v", dbErr)
+			os.Exit(1)
+		}
+	}()
 
 	// Apply migrations
 	err = m.Up()
-	if err != nil && err != migrate.ErrNoChange {
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		log.PrintfError("Migration failed: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
 
 	log.Printf("Database migration completed successfully")
@@ -95,7 +123,7 @@ func main() {
 	}, log, retry.DefaultRetryConfig("valkey.NewClient"))()
 	if err != nil {
 		log.PrintfError("Failed to connect to Valkey: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
 	defer valkeyClient.Close()
 
@@ -109,7 +137,7 @@ func main() {
 	spkiBytes, err := x509.MarshalPKIXPublicKey(key.Public().(ed25519.PublicKey))
 	if err != nil {
 		log.PrintfError("Failed to marshal public key: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
 	pemBlock := pem.Block{
 		Type:  "PUBLIC KEY",
@@ -128,7 +156,7 @@ func main() {
 	err = router.SetTrustedProxies(cfg.TrustedProxies)
 	if err != nil {
 		log.PrintfError("Could not set trusted proxies list: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
 
 	// Configure router path handling
@@ -176,6 +204,6 @@ func main() {
 	log.PrintfInfo("Starting Server on port %s", cfg.Port)
 	if err := router.Run(":" + cfg.Port); err != nil {
 		log.PrintfError("Failed to start server: %v", err)
-		panic(err)
+		os.Exit(1)
 	}
 }

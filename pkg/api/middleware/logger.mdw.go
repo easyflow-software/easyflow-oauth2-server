@@ -10,14 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Creates a new logger instance and adds it to the Gin context.
+// LoggerMiddleware creates a new logger instance and adds it to the Gin context.
 // It requires the config middleware to be run first to access logging configuration.
 // If config is not found or invalid, it aborts the request with a 500 error.
-func LoggerMiddleware(module_name string) gin.HandlerFunc {
+func LoggerMiddleware(moduleName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cfg, ok := c.Get("config")
 		if !ok {
-			c.JSON(http.StatusInternalServerError, errors.ApiError{
+			c.JSON(http.StatusInternalServerError, errors.APIError{
 				Code:    http.StatusInternalServerError,
 				Error:   "ConfigError",
 				Details: "Config not found in context",
@@ -28,7 +28,7 @@ func LoggerMiddleware(module_name string) gin.HandlerFunc {
 
 		config, ok := cfg.(*config.Config)
 		if !ok {
-			c.JSON(http.StatusInternalServerError, errors.ApiError{
+			c.JSON(http.StatusInternalServerError, errors.APIError{
 				Code:    http.StatusInternalServerError,
 				Error:   "ConfigError",
 				Details: "Config is not of type *common.Config",
@@ -37,7 +37,7 @@ func LoggerMiddleware(module_name string) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("logger", logger.NewLogger(os.Stdout, module_name, config.LogLevel, c.ClientIP()))
+		c.Set("logger", logger.NewLogger(os.Stdout, moduleName, config.LogLevel, c.ClientIP()))
 		c.Next()
 	}
 }

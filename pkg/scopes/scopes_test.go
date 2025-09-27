@@ -144,16 +144,24 @@ func TestFilterScopes(t *testing.T) {
 
 		// Complex hierarchical matching
 		{
-			name:         "deep nested scope matching",
-			userScopes:   []string{"api:read:user:*"},
-			clientScopes: []string{"api:read:user:profile", "api:read:user:settings", "api:read:posts"},
-			expected:     []string{"api:read:user:profile", "api:read:user:settings"},
+			name:       "deep nested scope matching",
+			userScopes: []string{"api:read:user:*"},
+			clientScopes: []string{
+				"api:read:user:profile",
+				"api:read:user:settings",
+				"api:read:posts",
+			},
+			expected: []string{"api:read:user:profile", "api:read:user:settings"},
 		},
 		{
-			name:         "multiple hierarchy levels",
-			userScopes:   []string{"api:*", "user:read:*"},
-			clientScopes: []string{"api:write:posts:meta", "user:read:profile:public", "admin:delete"},
-			expected:     []string{"api:write:posts:meta", "user:read:profile:public"},
+			name:       "multiple hierarchy levels",
+			userScopes: []string{"api:*", "user:read:*"},
+			clientScopes: []string{
+				"api:write:posts:meta",
+				"user:read:profile:public",
+				"admin:delete",
+			},
+			expected: []string{"api:write:posts:meta", "user:read:profile:public"},
 		},
 
 		// Order independence
@@ -185,7 +193,7 @@ func TestFilterScopes(t *testing.T) {
 	}
 }
 
-// Additional edge case tests
+// Additional edge case tests.
 func TestFilterScopesEdgeCases(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -222,5 +230,3 @@ func TestFilterScopesEdgeCases(t *testing.T) {
 		})
 	}
 }
-
-

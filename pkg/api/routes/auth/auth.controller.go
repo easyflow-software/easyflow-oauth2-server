@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RegisterAuthEnpoints sets up the authentication-related endpoints.
 func RegisterAuthEnpoints(r *gin.RouterGroup) {
 	r.Use(middleware.LoggerMiddleware("Auth"))
 	r.POST("/register", registerController)
@@ -18,7 +19,7 @@ func RegisterAuthEnpoints(r *gin.RouterGroup) {
 }
 
 func registerController(c *gin.Context) {
-	utils, errs := endpoint.SetupEndpoint[CreateUserRequest](c)
+	utils, errs := endpoint.SetupEndpoint[createUserRequest](c)
 	if len(errs) > 0 {
 		endpoint.SendSetupErrorResponse(c, errs)
 		return
@@ -34,7 +35,7 @@ func registerController(c *gin.Context) {
 }
 
 func loginController(c *gin.Context) {
-	utils, errs := endpoint.SetupEndpoint[LoginRequest](c)
+	utils, errs := endpoint.SetupEndpoint[loginRequest](c)
 	if len(errs) > 0 {
 		endpoint.SendSetupErrorResponse(c, errs)
 		return
@@ -47,7 +48,15 @@ func loginController(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(utils.Config.SessionCookieName, login.SessionToken, int(time.Duration(utils.Config.JwtSessionTokenExpiryHours)*time.Hour)/int(time.Second), "/", utils.Config.Domain, true, utils.Config.Environment == config.Production)
+	c.SetCookie(
+		utils.Config.SessionCookieName,
+		login.SessionToken,
+		int(time.Duration(utils.Config.JwtSessionTokenExpiryHours)*time.Hour)/int(time.Second),
+		"/",
+		utils.Config.Domain,
+		true,
+		utils.Config.Environment == config.Production,
+	)
 
 	c.JSON(http.StatusOK, login)
 }
@@ -59,7 +68,15 @@ func logoutController(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(utils.Config.SessionCookieName, "value string", -1, "/", utils.Config.Domain, true, utils.Config.Environment == config.Production)
+	c.SetCookie(
+		utils.Config.SessionCookieName,
+		"value string",
+		-1,
+		"/",
+		utils.Config.Domain,
+		true,
+		utils.Config.Environment == config.Production,
+	)
 
 	c.Status(http.StatusNoContent)
 }

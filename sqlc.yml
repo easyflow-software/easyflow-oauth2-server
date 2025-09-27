@@ -3,6 +3,8 @@ sql:
   - engine: "postgresql"
     queries: "pkg/database/sql/queries"
     schema: "pkg/database/sql/migrations"
+    database:
+      uri: "postgres://postgres:password@localhost:5432/easyflow-oauth2-server?sslmode=disable"
     gen:
       go:
         package: "database"

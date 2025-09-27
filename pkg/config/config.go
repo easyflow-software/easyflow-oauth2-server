@@ -1,3 +1,4 @@
+// Package config handles application configuration loading and validation.
 package config
 
 import (
@@ -12,13 +13,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Environment represents the application environment.
 type Environment string
 
+// Define possible environments.
 const (
 	Development Environment = "development"
 	Production  Environment = "production"
 )
 
+// Config holds the application configuration values.
 type Config struct {
 	// Application
 	LogLevel          logger.LogLevel
@@ -38,19 +42,19 @@ type Config struct {
 	ValkeyPassword   string
 	ValkeyClientName string
 	// JWT
-	JwtIssuer                   string
-	JwtSessionTokenExpiryHours  int    // in hours
-	JwtSecret                   string // Needs to be 32 bytes long (32 characters)
+	JwtIssuer                  string
+	JwtSessionTokenExpiryHours int    // in hours
+	JwtSecret                  string // Needs to be 32 bytes long (32 characters)
 }
 
-// Get an environment variable or return a default value
+// Get an environment variable or return a default value.
 func getEnv(key, fallback string, validation func(value string) bool, log *logger.Logger) string {
 	value, ok := os.LookupEnv(key)
 	if !ok {
 		value = fallback
 	}
 
-	if validation(value) != true {
+	if !validation(value) {
 		log.PrintfError("Invalid value for %s: %s\n", key, value)
 		return fallback
 	}
@@ -69,14 +73,18 @@ func getEnvInt(key string, fallback int, validation func(value int) bool, log *l
 		return fallback
 	}
 
-	if validation(i) != true {
+	if !validation(i) {
 		log.PrintfError("Invalid value for %s: %s\n", key, value)
 		return fallback
 	}
 	return i
 }
 
-func getEnvSlice(key, fallback string, validation func(value string) bool, log *logger.Logger) []string {
+func getEnvSlice(
+	key, fallback string,
+	validation func(value string) bool,
+	log *logger.Logger,
+) []string {
 	value, ok := os.LookupEnv(key)
 	if !ok {
 		value = fallback
@@ -94,7 +102,7 @@ func getEnvSlice(key, fallback string, validation func(value string) bool, log *
 	}
 
 	for _, part := range parts {
-		if validation(part) != true {
+		if !validation(part) {
 			log.PrintfError("Invalid value for %s: %s\n", key, part)
 			return strings.Split(fallback, ",")
 		}
@@ -102,14 +110,18 @@ func getEnvSlice(key, fallback string, validation func(value string) bool, log *
 	return parts
 }
 
-// Load the default configuration
-// Loads the .env file if present
+// LoadDefaultConfig loads and validates the configuration from environment variables.
+// Loads the .env file if present in the current working directory.
+// If an environment variable is not set, it uses the provided default value.
 func LoadDefaultConfig() (*Config, error) {
 	log := logger.NewLogger(os.Stdout, "Config", logger.INFO, "System")
 
 	logLevel := logger.LogLevel(getEnv("LOG_LEVEL", "DEBUG", func(value string) bool {
 		switch value {
-		case string(logger.DEBUG), string(logger.INFO), string(logger.WARNING), string(logger.ERROR):
+		case string(logger.DEBUG),
+			string(logger.INFO),
+			string(logger.WARNING),
+			string(logger.ERROR):
 			return true
 		default:
 			return false
@@ -161,10 +173,15 @@ func LoadDefaultConfig() (*Config, error) {
 			_, err := url.Parse(value)
 			return err == nil
 		}, log),
-		MigrationsPath: getEnv("MIGRATIONS_PATH", "pkg/database/sql/migrations", func(value string) bool {
-			_, err := os.Stat(value)
-			return err == nil
-		}, log),
+		MigrationsPath: getEnv(
+			"MIGRATIONS_PATH",
+			"pkg/database/sql/migrations",
+			func(value string) bool {
+				_, err := os.Stat(value)
+				return err == nil
+			},
+			log,
+		),
 		Environment: Environment(getEnv("ENVIRONMENT", "development", func(value string) bool {
 			return value == string(Development) || value == string(Production)
 		}, log)),
@@ -190,12 +207,37 @@ func LoadDefaultConfig() (*Config, error) {
 			}
 			return false
 		}, log),
-		ValkeyUsername:   getEnv("VALKEY_USERNAME", "", func(value string) bool { return value != "" }, log),
-		ValkeyPassword:   getEnv("VALKEY_PASSWORD", "", func(value string) bool { return true }, log),
-		ValkeyClientName: getEnv("VALKEY_CLIENT_NAME", "", func(value string) bool { return value != "" }, log),
+		ValkeyUsername: getEnv(
+			"VALKEY_USERNAME",
+			"",
+			func(value string) bool { return value != "" },
+			log,
+		),
+		ValkeyPassword: getEnv(
+			"VALKEY_PASSWORD",
+			"",
+			func(_ string) bool { return true },
+			log,
+		),
+		ValkeyClientName: getEnv(
+			"VALKEY_CLIENT_NAME",
+			"",
+			func(value string) bool { return value != "" },
+			log,
+		),
 		// JWT
-		JwtIssuer:                   getEnv("JWT_ISSUER", "", func(value string) bool { return value != "" }, log),
-		JwtSessionTokenExpiryHours:  getEnvInt("JWT_SESSION_TOKEN_EXPIRY_HOURS", 1, func(value int) bool { return value > 0 }, log),
+		JwtIssuer: getEnv(
+			"JWT_ISSUER",
+			"",
+			func(value string) bool { return value != "" },
+			log,
+		),
+		JwtSessionTokenExpiryHours: getEnvInt(
+			"JWT_SESSION_TOKEN_EXPIRY_HOURS",
+			1,
+			func(value int) bool { return value > 0 },
+			log,
+		),
 		JwtSecret: getEnv("JWT_SECRET", "", func(value string) bool {
 			return len([]byte(value)) == 32
 		}, log),
