@@ -1,3 +1,4 @@
+// Package scopes provides utilities for handling and filtering OAuth2 scopes.
 package scopes
 
 import (
@@ -5,12 +6,12 @@ import (
 	"strings"
 )
 
-// filters scopes so that only scopes present in both userScopes and clientScopes are returned.
+// FilterScopes filters scopes so that only scopes present in both userScopes and clientScopes are returned.
 //
 // If user has general scopes (i.e "*", "api:*"), the specific scopes from clientScopes are returned
 // this also works for multi-level scopes (i.e "api:read:*" will match "api:read:user").
 //
-// Important: if clientScopes has general scopes but the user does not it will be ignored
+// Important: if clientScopes has general scopes but the user does not it will be ignored.
 func FilterScopes(userScopes, clientScopes []string) []string {
 	if len(userScopes) == 0 || len(clientScopes) == 0 {
 		return []string{} // Return empty slice, not nil

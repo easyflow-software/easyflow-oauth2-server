@@ -1,3 +1,5 @@
+// Package retry provides a retry wrapper for functions that may fail intermittently.
+// It supports configurable retry attempts, delays, and exponential backoff.
 package retry
 
 import (
@@ -5,8 +7,8 @@ import (
 	"time"
 )
 
-// RetryConfig holds the configuration for retry behavior
-type RetryConfig struct {
+// Config holds the configuration for retry behavior.
+type Config struct {
 	// MaxAttempts is the maximum number of attempts before giving up
 	MaxAttempts int
 	// Delay is the initial delay between attempts
@@ -21,22 +23,26 @@ type RetryConfig struct {
 	RetryableErr func(error) bool
 }
 
-// DefaultRetryConfig provides sensible default values
-func DefaultRetryConfig(name string) RetryConfig {
-	return RetryConfig{
+// DefaultRetryConfig provides sensible default values.
+func DefaultRetryConfig(name string) Config {
+	return Config{
 		MaxAttempts:  5,
 		Delay:        time.Second,
 		MaxDelay:     time.Second * 30,
 		Multiplier:   2.0,
 		FunctionName: name,
-		RetryableErr: func(err error) bool {
+		RetryableErr: func(_ error) bool {
 			return true // By default, retry all errors
 		},
 	}
 }
 
-// WithRetry wraps a function with retry logic
-func WithRetry[T any](fn func() (T, error), logger *logger.Logger, config RetryConfig) func() (T, error) {
+// WithRetry wraps a function with retry logic.
+func WithRetry[T any](
+	fn func() (T, error),
+	logger *logger.Logger,
+	config Config,
+) func() (T, error) {
 	return func() (T, error) {
 		var lastErr error
 		currentDelay := config.Delay
@@ -55,8 +61,16 @@ func WithRetry[T any](fn func() (T, error), logger *logger.Logger, config RetryC
 
 			if attempt < config.MaxAttempts-1 {
 				time.Sleep(currentDelay)
-				currentDelay = min(time.Duration(float64(currentDelay)*config.Multiplier), config.MaxDelay)
-				logger.PrintfWarning("Failed to complete function %s successfully retring again in %f. Attempt %d", config.FunctionName, currentDelay.Seconds(), attempt)
+				currentDelay = min(
+					time.Duration(float64(currentDelay)*config.Multiplier),
+					config.MaxDelay,
+				)
+				logger.PrintfWarning(
+					"Failed to complete function %s successfully retring again in %f. Attempt %d",
+					config.FunctionName,
+					currentDelay.Seconds(),
+					attempt,
+				)
 			}
 		}
 

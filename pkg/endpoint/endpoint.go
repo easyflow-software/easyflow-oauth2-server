@@ -1,3 +1,4 @@
+// Package endpoint provides utilities for setting up and handling API endpoints.
 package endpoint
 
 import (
@@ -8,7 +9,7 @@ import (
 	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/logger"
 	"easyflow-oauth2-server/pkg/tokens"
-	"fmt"
+	e "errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,26 @@ import (
 	"github.com/valkey-io/valkey-go"
 )
 
-type EndpointUtils[T any] struct {
+// Error definitions.
+var (
+	ErrQueryNotFoundError  = e.New("queries not found in context")
+	ErrQueryTypeError      = e.New("type assertion to *database.Queries failed")
+	ErrConfigNotFoundError = e.New("config not found in context")
+	ErrConfigTypeError     = e.New("type assertion to *config.Config failed")
+	ErrLoggerNotFoundError = e.New("logger not found in context")
+	ErrLoggerTypeError     = e.New("type assertion to *logger.Logger failed")
+	ErrValkeyNotFoundError = e.New("valkey not found in context")
+	ErrValkeyTypeError     = e.New("type assertion to valkey.Client failed")
+	ErrKeyNotFoundError    = e.New("key not found in context")
+	ErrKeyTypeError        = e.New("type assertion to *ed25519.PrivateKey failed")
+	ErrUserNotFoundError   = e.New("user not found in context")
+	ErrUserTypeError       = e.New("type assertion to *tokens.JWTTokenPayload failed")
+)
+
+// Utils holds the extracted utilities for an endpoint.
+// T is a generic type parameter representing the expected payload type.
+// If no payload is expected, use 'any' as the type argument.
+type Utils[T any] struct {
 	Payload        T
 	Logger         *logger.Logger
 	Queries        *database.Queries
@@ -39,92 +59,95 @@ func getPayload[T any](c *gin.Context) (T, error) {
 }
 
 func getQueries(c *gin.Context) (*database.Queries, error) {
-	raw_queries, ok := c.Get("queries")
+	rawQueries, ok := c.Get("queries")
 	if !ok {
-		return nil, fmt.Errorf("queries not found in context")
+		return nil, ErrQueryNotFoundError
 	}
 
-	queries, ok := raw_queries.(*database.Queries)
+	queries, ok := rawQueries.(*database.Queries)
 	if !ok {
-		return nil, fmt.Errorf("type assertion to *database.Queries failed")
+		return nil, ErrQueryTypeError
 	}
 
 	return queries, nil
 }
 
 func getConfig(c *gin.Context) (*config.Config, error) {
-	raw_cfg, ok := c.Get("config")
+	rawCfg, ok := c.Get("config")
 	if !ok {
-		return nil, fmt.Errorf("config not found in context")
+		return nil, ErrConfigNotFoundError
 	}
 
-	cfg, ok := raw_cfg.(*config.Config)
+	cfg, ok := rawCfg.(*config.Config)
 	if !ok {
-		return nil, fmt.Errorf("type assertion to *common.Config failed")
+		return nil, ErrConfigTypeError
 	}
 
 	return cfg, nil
 }
 
 func getLogger(c *gin.Context) (*logger.Logger, error) {
-	raw_logger, ok := c.Get("logger")
+	rawLogger, ok := c.Get("logger")
 	if !ok {
-		return nil, fmt.Errorf("logger not found in context")
+		return nil, ErrLoggerNotFoundError
 	}
 
-	logger, ok := raw_logger.(*logger.Logger)
+	logger, ok := rawLogger.(*logger.Logger)
 	if !ok {
-		return nil, fmt.Errorf("type assertion to *logger.Logger failed")
+		return nil, ErrLoggerTypeError
 	}
 
 	return logger, nil
 }
 
 func getValkey(c *gin.Context) (valkey.Client, error) {
-	raw_valkey, ok := c.Get("valkey")
+	rawValkey, ok := c.Get("valkey")
 	if !ok {
-		return nil, fmt.Errorf("valkey not found in context")
+		return nil, ErrValkeyNotFoundError
 	}
 
-	valkey, ok := raw_valkey.(valkey.Client)
+	valkey, ok := rawValkey.(valkey.Client)
 	if !ok {
-		return nil, fmt.Errorf("type assertion to *valkey.Client failed")
+		return nil, ErrValkeyTypeError
 	}
 
 	return valkey, nil
 }
 
 func getKey(c *gin.Context) (*ed25519.PrivateKey, error) {
-	raw_key, ok := c.Get("key")
+	rawKey, ok := c.Get("key")
 	if !ok {
-		return nil, fmt.Errorf("key not found in context")
+		return nil, ErrKeyNotFoundError
 	}
 
-	key, ok := raw_key.(*ed25519.PrivateKey)
+	key, ok := rawKey.(*ed25519.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("type assertion to *ed25519.PrivateKey failed")
+		return nil, ErrKeyTypeError
 	}
 
 	return key, nil
 }
 
 func getUser(c *gin.Context) (*tokens.JWTTokenPayload, error) {
-	raw_user, ok := c.Get("user")
+	rawUser, ok := c.Get("user")
 	if !ok {
-		return nil, fmt.Errorf("user not found in context")
+		return nil, ErrUserNotFoundError
 	}
 
-	user, ok := raw_user.(*tokens.JWTTokenPayload)
+	user, ok := rawUser.(*tokens.JWTTokenPayload)
 	if !ok {
-		return nil, fmt.Errorf("type assertion to *tokens.JWTTokenPayload failed")
+		return nil, ErrUserTypeError
 	}
 
 	return user, nil
 }
 
-func SetupEndpoint[T any](c *gin.Context) (EndpointUtils[T], []string) {
+// SetupEndpoint is a helper function to extract and validate common components from the Gin context.
+// It returns an EndpointUtils struct containing the extracted components and a slice of error messages, if any.
+// The function takes a generic type parameter T for the expected payload type, provide any if no payload is expected.
+func SetupEndpoint[T any](c *gin.Context) (Utils[T], []string) {
 	var errs []error
-	var endpointUtils EndpointUtils[T]
+	var endpointUtils Utils[T]
 	// Extract Request Context
 	endpointUtils.RequestContext = c.Request.Context()
 
@@ -193,6 +216,7 @@ func SetupEndpoint[T any](c *gin.Context) (EndpointUtils[T], []string) {
 	return endpointUtils, serializableErrors
 }
 
+// SendSetupErrorResponse is a helper function to send a standardized error response.
 func SendSetupErrorResponse(c *gin.Context, errs []string) {
 	errors.SendErrorResponse(c, http.StatusInternalServerError, errors.InternalServerError, errs)
 }

@@ -6,6 +6,7 @@ import (
 	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/endpoint"
 	"easyflow-oauth2-server/pkg/tokens"
+	e "errors"
 	"net/http"
 	"time"
 
@@ -13,17 +14,22 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func register(utils endpoint.EndpointUtils[CreateUserRequest]) (*CreateUserResponse, *errors.ApiError) {
+func register(
+	utils endpoint.Utils[createUserRequest],
+) (*createUserResponse, *errors.APIError) {
 	// Hash the password
-	hash, err := bcrypt.GenerateFromPassword([]byte(utils.Payload.Password), utils.Config.SaltRounds)
+	hash, err := bcrypt.GenerateFromPassword(
+		[]byte(utils.Payload.Password),
+		utils.Config.SaltRounds,
+	)
 	if err != nil {
-		return nil, &errors.ApiError{
+		return nil, &errors.APIError{
 			Code:    http.StatusInternalServerError,
 			Error:   errors.InternalServerError,
 			Details: "Failed to hash password",
 		}
 	}
-	utils.Logger.PrintfDebug("Sucessfully hashed password")
+	utils.Logger.PrintfDebug("Successfully hashed password")
 
 	user, err := utils.Queries.CreateUser(utils.RequestContext, database.CreateUserParams{
 		Email:        utils.Payload.Email,
@@ -33,14 +39,17 @@ func register(utils endpoint.EndpointUtils[CreateUserRequest]) (*CreateUserRespo
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code.Name() == "unique_violation" {
-			utils.Logger.PrintfWarning("Attempted to create user with existing email: %s", utils.Payload.Email)
-			return nil, &errors.ApiError{
+			utils.Logger.PrintfWarning(
+				"Attempted to create user with existing email: %s",
+				utils.Payload.Email,
+			)
+			return nil, &errors.APIError{
 				Code:    http.StatusConflict,
 				Error:   errors.AlreadyExists,
 				Details: "Email already in use",
 			}
 		}
-		return nil, &errors.ApiError{
+		return nil, &errors.APIError{
 			Code:    http.StatusInternalServerError,
 			Error:   errors.InternalServerError,
 			Details: "Failed to create user",
@@ -48,7 +57,7 @@ func register(utils endpoint.EndpointUtils[CreateUserRequest]) (*CreateUserRespo
 	}
 	utils.Logger.PrintfInfo("User with id %s created", user.ID)
 
-	return &CreateUserResponse{
+	return &createUserResponse{
 		ID:    user.ID.String(),
 		Email: user.Email,
 		FirstName: func() *string {
@@ -66,19 +75,22 @@ func register(utils endpoint.EndpointUtils[CreateUserRequest]) (*CreateUserRespo
 	}, nil
 }
 
-func login(utils endpoint.EndpointUtils[LoginRequest]) (*LoginResponse, *errors.ApiError) {
+func login(utils endpoint.Utils[loginRequest]) (*loginResponse, *errors.APIError) {
 	user, err := utils.Queries.GetUserByEmail(utils.RequestContext, utils.Payload.Email)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			utils.Logger.PrintfWarning("Attempted login with nonexistent user: %s", utils.Payload.Email)
-			return nil, &errors.ApiError{
+		if e.Is(err, sql.ErrNoRows) {
+			utils.Logger.PrintfWarning(
+				"Attempted login with nonexistent user: %s",
+				utils.Payload.Email,
+			)
+			return nil, &errors.APIError{
 				Code:    http.StatusUnauthorized,
 				Error:   errors.Unauthorized,
 				Details: "Invalid email or password",
 			}
 		}
 		utils.Logger.PrintfError("Failed to get user by email: %v", err)
-		return nil, &errors.ApiError{
+		return nil, &errors.APIError{
 			Code:    http.StatusInternalServerError,
 			Error:   errors.InternalServerError,
 			Details: "Failed to get user by email",
@@ -89,7 +101,7 @@ func login(utils endpoint.EndpointUtils[LoginRequest]) (*LoginResponse, *errors.
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(utils.Payload.Password))
 	if err != nil {
 		utils.Logger.PrintfWarning("Invalid password for user: %s", utils.Payload.Email)
-		return nil, &errors.ApiError{
+		return nil, &errors.APIError{
 			Code:    http.StatusUnauthorized,
 			Error:   errors.Unauthorized,
 			Details: "Invalid email or password",
@@ -100,8 +112,17 @@ func login(utils endpoint.EndpointUtils[LoginRequest]) (*LoginResponse, *errors.
 	// TODO: Implement more robust client handling with session revocation, etc.
 	// For now, we just issue a short-lived session token.
 	sessionToken, err := tokens.GenerateSessionToken(utils.Config, utils.Key, user.ID.String())
+	if err != nil {
+		utils.Logger.PrintfError("Failed to generate session token: %v", err)
+		return nil, &errors.APIError{
+			Code:    http.StatusInternalServerError,
+			Error:   errors.InternalServerError,
+			Details: "Failed to generate session token",
+		}
+	}
+	utils.Logger.PrintfDebug("Generated session token for user %s", utils.Payload.Email)
 
-	return &LoginResponse{
+	return &loginResponse{
 		SessionToken: sessionToken,
 		ExpiresIn:    utils.Config.JwtSessionTokenExpiryHours * int(time.Hour.Seconds()),
 	}, nil
