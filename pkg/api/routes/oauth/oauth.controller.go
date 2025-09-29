@@ -5,6 +5,7 @@ import (
 	"easyflow-oauth2-server/pkg/api/middleware"
 	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/endpoint"
+	"easyflow-oauth2-server/pkg/tokens"
 	"net/http"
 	"net/url"
 	"slices"
@@ -110,18 +111,6 @@ func authorizeController(c *gin.Context) {
 		return
 	}
 
-	// check if client fully supports PKCE
-	if !client.IsPublic.Valid || !client.IsPublic.Bool {
-		redirectWithError(
-			c,
-			uri,
-			"unauthorized_client",
-			"The client is not a public client and cannot use PKCE",
-			state,
-		)
-		return
-	}
-
 	responseType, ok := c.GetQuery("response_type")
 	if !ok || responseType == "" {
 		redirectWithError(
@@ -209,10 +198,21 @@ func tokenController(c *gin.Context) {
 		)
 		return
 	}
-
-	switch grantType {
-	case "authorization_code":
-		clientID := c.Request.FormValue("client_id")
+	var clientSecret = ""
+	clientID := c.Request.FormValue("client_id")
+	if clientID == "" {
+		// Try to get client_id and secret from Basic Auth
+		var ok bool
+		clientID, clientSecret, ok = c.Request.BasicAuth()
+		if !ok {
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.MissingClientID,
+				"Basic auth header is required if client_id is not provided in the body or request is confidential",
+			)
+		}
+		utils.Logger.PrintfDebug("%s", clientID)
 		if clientID == "" {
 			errors.SendErrorResponse(
 				c,
@@ -222,25 +222,43 @@ func tokenController(c *gin.Context) {
 			)
 			return
 		}
-		client, err := getClient(utils, clientID)
-		if err != nil {
-			c.JSON(err.Code, err)
-			return
-		}
-		if !client.IsPublic.Valid || !client.IsPublic.Bool {
+	}
+	client, err := getClient(utils, clientID)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	if !client.IsPublic {
+		if clientSecret == "" {
 			errors.SendErrorResponse(
 				c,
 				http.StatusBadRequest,
-				errors.InvalidClientID,
-				"The client is not a public client and cannot use PKCE",
+				errors.MissingClientSecret,
+				"Client Secret is required for confidential clients",
 			)
 			return
 		}
+
+		if !client.ClientSecretHash.Valid ||
+			!tokens.CompareClientSecretHash(clientSecret, client.ClientSecretHash.String) {
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.InvalidClientSecret,
+				"Invalid Client Secret",
+			)
+			return
+		}
+	}
+
+	switch grantType {
+	case "authorization_code":
 		if !slices.Contains(client.GrantTypes, database.GrantTypesAuthorizationCode) {
 			errors.SendErrorResponse(
 				c,
 				http.StatusBadRequest,
-				errors.InvalidClientID,
+				errors.InvalidGrantType,
 				"The client is not authorized to use the authorization_code grant type",
 			)
 		}
@@ -277,24 +295,79 @@ func tokenController(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, authorizationCodeTokenResponse{
+		tokenRes := tokenResponse{
 			AccessToken:           *accessToken,
 			AccessTokenExpiresIn:  int(client.AccessTokenValidDuration),
-			RefreshToken:          *refreshToken,
+			RefreshTokenExpiresIn: int(client.RefreshTokenValidDuration),
+			Scopes:                scopes,
+		}
+
+		if slices.Contains(client.GrantTypes, database.GrantTypesRefreshToken) {
+			tokenRes.RefreshToken = *refreshToken
+		}
+
+		c.JSON(http.StatusOK, tokenRes)
+
+	case "client_credentials":
+		if !slices.Contains(client.GrantTypes, database.GrantTypesClientCredentials) {
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.InvalidGrantType,
+				"The client is not authorized to use the client_credentials grant type",
+			)
+		}
+
+		accessToken, scopes, err := clientCredentialsFlow(utils, client)
+		if err != nil {
+			c.JSON(err.Code, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, tokenResponse{
+			AccessToken:          *accessToken,
+			AccessTokenExpiresIn: int(client.AccessTokenValidDuration),
+			Scopes:               scopes,
+		})
+	case "refresh_token":
+		if !slices.Contains(client.GrantTypes, database.GrantTypesRefreshToken) {
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.InvalidGrantType,
+				"The client is not authorized to use the refresh_token grant type",
+			)
+		}
+
+		refreshToken := c.Request.FormValue("refresh_token")
+		if refreshToken == "" {
+			errors.SendErrorResponse(
+				c,
+				http.StatusBadRequest,
+				errors.MissingRefreshToken,
+				"The refresh_token parameter is required",
+			)
+			return
+		}
+
+		newAccessToken, newRefreshToken, scopes, err := refreshTokenFlow(
+			utils,
+			client,
+			refreshToken,
+		)
+		if err != nil {
+			c.JSON(err.Code, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, tokenResponse{
+			AccessToken:           *newAccessToken,
+			AccessTokenExpiresIn:  int(client.AccessTokenValidDuration),
+			RefreshToken:          *newRefreshToken,
 			RefreshTokenExpiresIn: int(client.RefreshTokenValidDuration),
 			Scopes:                scopes,
 		})
 
-	case "client_credentials":
-		c.JSON(
-			http.StatusNotImplemented,
-			gin.H{"message": "client_credentials grant type is not implemented yet"},
-		)
-	case "refresh_token":
-		c.JSON(
-			http.StatusNotImplemented,
-			gin.H{"message": "refresh_token grant type is not implemented yet"},
-		)
 	default:
 		errors.SendErrorResponse(
 			c,

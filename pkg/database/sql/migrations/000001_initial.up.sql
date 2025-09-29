@@ -76,8 +76,8 @@ CREATE TABLE oauth_clients (
     name TEXT NOT NULL,
     description TEXT,
     redirect_uris TEXT[] NOT NULL, -- Array of allowed redirect URIs
-    grant_types grant_types[] DEFAULT ARRAY['authorization_code'::grant_types],
-    is_public BOOLEAN DEFAULT FALSE, -- True for PKCE clients
+    grant_types grant_types[] NOT NULL DEFAULT ARRAY['authorization_code'::grant_types],
+    is_public BOOLEAN NOT NULL DEFAULT FALSE, -- True for PKCE clients
     authorization_code_valid_duration INTEGER NOT NULL DEFAULT 600, -- in seconds
     access_token_valid_duration INTEGER NOT NULL DEFAULT 900, -- in seconds
     refresh_token_valid_duration INTEGER NOT NULL DEFAULT 604800 -- in seconds

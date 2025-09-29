@@ -1,6 +1,6 @@
 package oauth
 
-type authorizationCodeTokenResponse struct {
+type tokenResponse struct {
 	AccessToken           string   `json:"access_token"`
 	AccessTokenExpiresIn  int      `json:"expires_in"` // lifetime in seconds of the access token
 	RefreshToken          string   `json:"refresh_token,omitempty"`

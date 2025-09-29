@@ -3,6 +3,7 @@ package tokens
 
 import (
 	"crypto/ed25519"
+	"crypto/rand"
 	"easyflow-oauth2-server/pkg/config"
 	"easyflow-oauth2-server/pkg/database"
 	"errors"
@@ -116,15 +117,7 @@ func GenerateTokens(
 		return "", "", ErrFailedToGenerateAccessToken
 	}
 
-	var refreshTokenPayload = generateBasePayload(cfg, userID, client, sessionID)
-	refreshTokenPayload.ExpiresAt = jwt.NewNumericDate(
-		time.Now().Add(time.Duration(client.RefreshTokenValidDuration) * time.Microsecond),
-	)
-
-	refreshToken, err := generateJWT(key, refreshTokenPayload)
-	if err != nil {
-		return "", "", ErrFailedToGenerateRefreshToken
-	}
+	refreshToken := rand.Text() + rand.Text()
 
 	return accessToken, refreshToken, nil
 }

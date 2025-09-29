@@ -1,0 +1,27 @@
+meta {
+  name: Token Authorization Code Grant
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/oauth/token
+  body: formUrlEncoded
+  auth: basic
+}
+
+auth:basic {
+  username: test
+  password: test
+}
+
+body:form-urlencoded {
+  grant_type: authorization_code
+  code: XONQQB6J6VHDNX76DCPYRT4SUH
+  code_verifier: test
+  ~client_id: test
+}
+
+settings {
+  encodeUrl: true
+}
