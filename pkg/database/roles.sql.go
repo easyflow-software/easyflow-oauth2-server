@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const createRole = `-- name: CreateRole :one
@@ -124,7 +125,7 @@ type GetRoleWithScopesRow struct {
 	Description sql.NullString
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	ScopeNames  interface{}
+	ScopeNames  []string
 }
 
 func (q *Queries) GetRoleWithScopes(ctx context.Context, id uuid.UUID) (GetRoleWithScopesRow, error) {
@@ -136,7 +137,7 @@ func (q *Queries) GetRoleWithScopes(ctx context.Context, id uuid.UUID) (GetRoleW
 		&i.Description,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.ScopeNames,
+		pq.Array(&i.ScopeNames),
 	)
 	return i, err
 }

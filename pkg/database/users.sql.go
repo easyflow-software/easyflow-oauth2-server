@@ -190,8 +190,8 @@ LIMIT $1 OFFSET $2
 `
 
 type ListUsersParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int64
+	Offset int64
 }
 
 type ListUsersRow struct {

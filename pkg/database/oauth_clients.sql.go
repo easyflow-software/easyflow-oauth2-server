@@ -38,7 +38,7 @@ type CreateOAuthClientParams struct {
 	Description      sql.NullString
 	RedirectUris     []string
 	GrantTypes       []GrantTypes
-	IsPublic         sql.NullBool
+	IsPublic         bool
 }
 
 type CreateOAuthClientRow struct {
@@ -48,7 +48,7 @@ type CreateOAuthClientRow struct {
 	Description  sql.NullString
 	RedirectUris []string
 	GrantTypes   []GrantTypes
-	IsPublic     sql.NullBool
+	IsPublic     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -101,7 +101,7 @@ type GetOAuthClientRow struct {
 	Description                    sql.NullString
 	RedirectUris                   []string
 	GrantTypes                     []GrantTypes
-	IsPublic                       sql.NullBool
+	IsPublic                       bool
 	CreatedAt                      time.Time
 	UpdatedAt                      time.Time
 	AuthorizationCodeValidDuration int32
@@ -178,7 +178,7 @@ type GetOAuthClientByClientIDRow struct {
 	Description                    sql.NullString
 	RedirectUris                   []string
 	GrantTypes                     []GrantTypes
-	IsPublic                       sql.NullBool
+	IsPublic                       bool
 	CreatedAt                      time.Time
 	UpdatedAt                      time.Time
 	AuthorizationCodeValidDuration int32
@@ -222,7 +222,7 @@ type ListOAuthClientsRow struct {
 	Description  sql.NullString
 	RedirectUris []string
 	GrantTypes   []GrantTypes
-	IsPublic     sql.NullBool
+	IsPublic     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -273,7 +273,7 @@ type UpdateOAuthClientParams struct {
 	Description  sql.NullString
 	RedirectUris []string
 	GrantTypes   []GrantTypes
-	IsPublic     sql.NullBool
+	IsPublic     bool
 }
 
 type UpdateOAuthClientRow struct {
@@ -283,7 +283,7 @@ type UpdateOAuthClientRow struct {
 	Description  sql.NullString
 	RedirectUris []string
 	GrantTypes   []GrantTypes
-	IsPublic     sql.NullBool
+	IsPublic     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -334,11 +334,11 @@ SELECT EXISTS(SELECT 1 FROM oauth_clients WHERE client_id = $1 AND $2 = ANY(redi
 
 type ValidateRedirectURIParams struct {
 	ClientID     string
-	RedirectUris []string
+	RedirectUris string
 }
 
 func (q *Queries) ValidateRedirectURI(ctx context.Context, arg ValidateRedirectURIParams) (bool, error) {
-	row := q.db.QueryRowContext(ctx, validateRedirectURI, arg.ClientID, pq.Array(arg.RedirectUris))
+	row := q.db.QueryRowContext(ctx, validateRedirectURI, arg.ClientID, arg.RedirectUris)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

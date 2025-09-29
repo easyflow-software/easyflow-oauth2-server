@@ -1,0 +1,25 @@
+meta {
+  name: Token Refresh Token Grant
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/oauth/token
+  body: formUrlEncoded
+  auth: basic
+}
+
+auth:basic {
+  username: test
+  password: test
+}
+
+body:form-urlencoded {
+  grant_type: refresh_token
+  refresh_token: JQMGKVISZWFUCRRCFVE63JH53OWZOM2625PEN2656ONI2A3BRZOC
+}
+
+settings {
+  encodeUrl: true
+}

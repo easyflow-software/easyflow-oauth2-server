@@ -89,9 +89,9 @@ func authorizationCodeFlow(
 ) (*string, *string, []string, *errors.APIError) {
 	key := fmt.Sprintf("authorization-code:%s", code)
 
-	query := utils.Valkey.B().Hgetall().Key(key).Build()
+	query := utils.Valkey.B().Hgetall().Key(key).Cache()
 
-	res := utils.Valkey.Do(utils.RequestContext, query)
+	res := utils.Valkey.DoCache(utils.RequestContext, query, 1*time.Minute)
 	if res.Error() != nil {
 		utils.Logger.PrintfError("Failed to get authorization code: %v", res.Error())
 		return nil, nil, []string{}, &errors.APIError{
@@ -193,10 +193,18 @@ func authorizationCodeFlow(
 	}
 
 	var queries valkey.Commands
-	sessionKey := fmt.Sprintf("session:%s", sessionID.String())
+	sessionKey := fmt.Sprintf("session:%s", refreshToken)
+	// Convert to single commands to use auto-pipelining
 	queries = append(
 		queries,
-		utils.Valkey.B().Set().Key(sessionKey).Value(sessionID.String()).Build(),
+		utils.Valkey.B().
+			Hset().
+			Key(sessionKey).
+			FieldValue().
+			FieldValue("sessionID", sessionID.String()).
+			FieldValue("subject", user.ID.String()).
+			FieldValue("scopes", strings.Join(scopes, ",")).
+			Build(),
 	)
 	queries = append(
 		queries,
@@ -219,13 +227,126 @@ func authorizationCodeFlow(
 	}
 	utils.Logger.PrintfDebug("Stored session with ID: %s", sessionID.String())
 
-	query = utils.Valkey.B().Del().Key(key).Build()
-	res = utils.Valkey.Do(utils.RequestContext, query)
+	destroyQuery := utils.Valkey.B().Del().Key(key).Build()
+	res = utils.Valkey.Do(utils.RequestContext, destroyQuery)
 	if res.Error() != nil {
 		utils.Logger.PrintfError("Failed to delete authorization code: %v", res.Error())
 	}
 	utils.Logger.PrintfDebug("Deleted authorization code: %s", code)
 
 	return &accessToken, &refreshToken, scopes, nil
+}
 
+func clientCredentialsFlow(
+	utils endpoint.Utils[any],
+	client *database.GetOAuthClientByClientIDRow,
+) (*string, []string, *errors.APIError) {
+	sessionToken := uuid.New()
+
+	scopes := client.Scopes
+
+	accessToken, _, err := tokens.GenerateTokens(
+		utils.Config,
+		utils.Key,
+		client.ClientID,
+		client,
+		scopes,
+		sessionToken.String(),
+	)
+	if err != nil {
+		utils.Logger.PrintfError("Failed to generate access token: %v", err)
+		return nil, []string{}, &errors.APIError{
+			Code:    http.StatusInternalServerError,
+			Error:   errors.InternalServerError,
+			Details: "Failed to generate access token",
+		}
+	}
+
+	return &accessToken, scopes, nil
+}
+
+func refreshTokenFlow(
+	utils endpoint.Utils[any],
+	client *database.GetOAuthClientByClientIDRow,
+	refreshToken string,
+) (*string, *string, []string, *errors.APIError) {
+	sessionKey := fmt.Sprintf("session:%s", refreshToken)
+
+	query := utils.Valkey.B().Hgetall().Key(sessionKey).Build()
+
+	res := utils.Valkey.Do(utils.RequestContext, query)
+	if res.Error() != nil {
+		utils.Logger.PrintfError("Failed to get session: %v", res.Error())
+		return nil, nil, []string{}, &errors.APIError{
+			Code:    http.StatusInternalServerError,
+			Error:   errors.InternalServerError,
+			Details: "Failed to get session",
+		}
+	}
+
+	session, err := res.AsStrMap()
+	if err != nil || len(session) == 0 {
+		utils.Logger.PrintfWarning("Session not found: %s", refreshToken)
+		return nil, nil, []string{}, &errors.APIError{
+			Code:    http.StatusBadRequest,
+			Error:   errors.InvalidRefreshToken,
+			Details: "Invalid refresh token",
+		}
+	}
+
+	// TODO: Add check for changed session scopes and if so reprompt for login
+	scopes := strings.Split(session["scopes"], ",")
+	accessToken, newRefreshToken, err := tokens.GenerateTokens(
+		utils.Config,
+		utils.Key,
+		session["subject"],
+		client,
+		scopes,
+		session["sessionID"],
+	)
+	if err != nil {
+		utils.Logger.PrintfError("Failed to generate tokens: %v", err)
+		return nil, nil, []string{}, &errors.APIError{
+			Code:    http.StatusInternalServerError,
+			Error:   errors.InternalServerError,
+			Details: "Failed to generate tokens",
+		}
+	}
+
+	newSessionKey := fmt.Sprintf("session:%s", session["sessionID"])
+	createQuery := utils.Valkey.B().Set().Key(newSessionKey).Value(session["sessionID"]).Build()
+	res = utils.Valkey.Do(utils.RequestContext, createQuery)
+	if res.Error() != nil {
+		utils.Logger.PrintfError("Failed to store new session: %v", res.Error())
+		return nil, nil, []string{}, &errors.APIError{
+			Code:    http.StatusInternalServerError,
+			Error:   errors.InternalServerError,
+			Details: "Failed to store new session",
+		}
+	}
+	utils.Logger.PrintfDebug("Stored new session with ID: %s", session["sessionID"])
+	createQuery = utils.Valkey.B().
+		Expire().
+		Key(newSessionKey).
+		Seconds(int64(time.Duration(client.RefreshTokenValidDuration) * time.Second)).
+		Build()
+	res = utils.Valkey.Do(utils.RequestContext, createQuery)
+	if res.Error() != nil {
+		utils.Logger.PrintfError("Failed to set expiration for new session: %v", res.Error())
+		return nil, nil, []string{}, &errors.APIError{
+			Code:    http.StatusInternalServerError,
+			Error:   errors.InternalServerError,
+			Details: "Failed to set expiration for new session",
+		}
+	}
+
+	createQuery = utils.Valkey.B().Del().Key(sessionKey).Build()
+	res = utils.Valkey.Do(utils.RequestContext, createQuery)
+	if res.Error() != nil {
+		utils.Logger.PrintfError("Failed to delete old session: %v", res.Error())
+	} else {
+		utils.Logger.PrintfDebug("Deleted old session: %s", refreshToken)
+	}
+
+	return &accessToken, &newRefreshToken, scopes, nil
 }

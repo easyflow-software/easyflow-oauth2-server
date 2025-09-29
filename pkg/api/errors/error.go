@@ -18,6 +18,8 @@ const (
 	InvalidSessionToken     ErrorCode = "INVALID_SESSION_TOKEN"
 	MissingClientID         ErrorCode = "MISSING_CLIENT_ID"
 	InvalidClientID         ErrorCode = "INVALID_CLIENT_ID"
+	MissingClientSecret     ErrorCode = "MISSING_CLIENT_SECRET"
+	InvalidClientSecret     ErrorCode = "INVALID_CLIENT_SECRET"
 	MissingResponseType     ErrorCode = "MISSING_RESPONSE_TYPE"
 	UnsupportedResponseType ErrorCode = "UNSUPPORTED_RESPONSE_TYPE"
 	MissingCodeChallenge    ErrorCode = "MISSING_CODE_CHALLENGE"
@@ -33,6 +35,8 @@ const (
 	InvalidCode             ErrorCode = "INVALID_CODE"
 	MissingCodeVerifier     ErrorCode = "MISSING_CODE_VERIFIER"
 	InvalidCodeVerifier     ErrorCode = "INVALID_CODE_VERIFIER"
+	MissingRefreshToken     ErrorCode = "MISSING_REFRESH_TOKEN"
+	InvalidRefreshToken     ErrorCode = "INVALID_REFRESH_TOKEN"
 )
 
 // APIError represents a standardized error response for the API.
