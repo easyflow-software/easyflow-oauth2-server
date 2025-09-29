@@ -1,5 +1,5 @@
 # Easyflow OAuth2 Server
-This is a own implementation of an OAuth2 server for easyflow. It follows the [RFC 6749 specification](https://datatracker.ietf.org/doc/html/rfc6749) with early adaptation for [OAuth2.1](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-13#section-3.2)pp.
+This is a own implementation of an OAuth2 server for easyflow. It follows the [RFC 6749 specification](https://datatracker.ietf.org/doc/html/rfc6749) with early adaptation for [OAuth2.1](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-13#section-3.2).
 
 ## Setup
 
