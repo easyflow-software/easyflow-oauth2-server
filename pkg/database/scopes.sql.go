@@ -128,7 +128,7 @@ func (q *Queries) ListScopes(ctx context.Context) ([]ListScopesRow, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListScopesRow
+	items := []ListScopesRow{}
 	for rows.Next() {
 		var i ListScopesRow
 		if err := rows.Scan(

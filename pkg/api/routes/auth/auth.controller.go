@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"easyflow-oauth2-server/pkg/api/middleware"
 	"easyflow-oauth2-server/pkg/config"
 	"easyflow-oauth2-server/pkg/endpoint"
 	"net/http"
@@ -12,7 +11,6 @@ import (
 
 // RegisterAuthEnpoints sets up the authentication-related endpoints.
 func RegisterAuthEnpoints(r *gin.RouterGroup) {
-	r.Use(middleware.LoggerMiddleware("Auth"))
 	r.POST("/register", registerController)
 	r.POST("/login", loginController)
 	r.DELETE("/logout", logoutController)

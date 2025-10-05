@@ -15,11 +15,8 @@ import (
 
 // RegisterOAuthEndpoints sets up the OAuth2-related endpoints.
 func RegisterOAuthEndpoints(r *gin.RouterGroup) {
-	r.Use(middleware.LoggerMiddleware("OAuth"))
-
 	r.GET("/authorize", middleware.SessionTokenMiddleware(), authorizeController)
 	r.POST("/token", tokenController)
-
 }
 
 func redirectWithError(

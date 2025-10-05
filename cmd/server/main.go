@@ -175,7 +175,8 @@ func main() {
 
 	// Add middleware
 	router.Use(middleware.ConfigMiddleware(cfg))
-	router.Use(middleware.QueriesMiddleware(queries))
+	router.Use(middleware.LoggerMiddleware())
+	router.Use(middleware.QueriesMiddleware(queries, db))
 	router.Use(middleware.ValkeyMiddleware(valkeyClient))
 	router.Use(middleware.KeyMiddlware(&key))
 	router.Use(gin.Recovery())
