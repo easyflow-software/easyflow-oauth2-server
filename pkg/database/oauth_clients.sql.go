@@ -233,7 +233,7 @@ func (q *Queries) ListOAuthClients(ctx context.Context) ([]ListOAuthClientsRow, 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListOAuthClientsRow
+	items := []ListOAuthClientsRow{}
 	for rows.Next() {
 		var i ListOAuthClientsRow
 		if err := rows.Scan(

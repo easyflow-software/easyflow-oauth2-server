@@ -13,7 +13,7 @@ import (
 // LoggerMiddleware creates a new logger instance and adds it to the Gin context.
 // It requires the config middleware to be run first to access logging configuration.
 // If config is not found or invalid, it aborts the request with a 500 error.
-func LoggerMiddleware(moduleName string) gin.HandlerFunc {
+func LoggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cfg, ok := c.Get("config")
 		if !ok {
@@ -37,7 +37,7 @@ func LoggerMiddleware(moduleName string) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("logger", logger.NewLogger(os.Stdout, moduleName, config.LogLevel, c.ClientIP()))
+		c.Set("logger", logger.NewLogger(os.Stdout, c.FullPath(), config.LogLevel, c.ClientIP()))
 		c.Next()
 	}
 }

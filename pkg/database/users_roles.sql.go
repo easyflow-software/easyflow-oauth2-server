@@ -48,7 +48,7 @@ func (q *Queries) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]GetUser
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUserRolesRow
+	items := []GetUserRolesRow{}
 	for rows.Next() {
 		var i GetUserRolesRow
 		if err := rows.Scan(&i.ID, &i.Name, &i.Description); err != nil {
@@ -80,7 +80,7 @@ func (q *Queries) GetUserScopes(ctx context.Context, userID uuid.UUID) ([]string
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	items := []string{}
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
@@ -118,7 +118,7 @@ func (q *Queries) GetUsersWithRole(ctx context.Context, roleID uuid.UUID) ([]Get
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUsersWithRoleRow
+	items := []GetUsersWithRoleRow{}
 	for rows.Next() {
 		var i GetUsersWithRoleRow
 		if err := rows.Scan(

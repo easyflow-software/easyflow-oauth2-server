@@ -1,0 +1,9 @@
+dir: "pkg/testutils/mocks"
+filename: "{{.InterfaceName}}.go"
+structname: "Mock{{.InterfaceName}}"
+pkgname: mocks
+template: testify
+packages:
+  easyflow-oauth2-server/pkg/database:
+    interfaces:
+      Querier:
