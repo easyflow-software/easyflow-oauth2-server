@@ -1,9 +1,19 @@
-dir: "pkg/testutils/mocks"
-filename: "{{.InterfaceName}}.go"
-structname: "Mock{{.InterfaceName}}"
-pkgname: mocks
+recursive: true
 template: testify
 packages:
-  easyflow-oauth2-server/pkg/database:
+  easyflow-oauth2-server:
+    config:
+      all: true
+      include-auto-generated: true
+      dir: "pkg/mocks"
+      filename: "{{.Mock}}{{.InterfaceName}}.go"
+      pkgname: "mocks"
+
+  github.com/valkey-io/valkey-go:
     interfaces:
-      Querier:
+      Client:
+        config:
+          dir: "pkg/mocks/valkey"
+          filename: "MockValkeyClient.go"
+          structname: "MockValkeyClient"
+          pkgname: mock_valkey
