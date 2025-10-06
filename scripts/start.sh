@@ -1,1 +1,1 @@
-reflex -r '^cmd/(.*?).*|.env|pkg/(.*?).*$' -s -- go run cmd/server/main.go
+reflex -r '^cmd/(.*?).*|.env|pkg/(.*?).*$|internal/(.*?).*' -s -- go run cmd/server/main.go
