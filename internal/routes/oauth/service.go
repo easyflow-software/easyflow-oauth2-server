@@ -11,7 +11,7 @@ import (
 	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/scopes"
 	"easyflow-oauth2-server/pkg/tokens"
-	"encoding/hex"
+	"encoding/base64"
 	e "errors"
 	"fmt"
 	"net/http"
@@ -26,13 +26,12 @@ import (
 // Service handles OAuth2 business logic.
 type Service struct {
 	*service.BaseService
-	Key *ed25519.PrivateKey
+	key *ed25519.PrivateKey
 }
 
 // ServiceParams holds dependencies for OAuthService.
 type ServiceParams struct {
 	fx.In
-
 	service.BaseServiceParams
 	Key *ed25519.PrivateKey
 }
@@ -42,6 +41,7 @@ func NewOAuthService(deps ServiceParams) *Service {
 	baseService := service.NewBaseService("OAuthService", deps.BaseServiceParams)
 	return &Service{
 		BaseService: baseService,
+		key:         deps.Key,
 	}
 }
 
@@ -170,7 +170,13 @@ func (s *Service) AuthorizationCodeFlow(
 
 	hash := sha256.Sum256([]byte(codeVerifier))
 
-	hashStr := hex.EncodeToString(hash[:])
+	hashStr := base64.RawURLEncoding.EncodeToString(hash[:])
+
+	logger.PrintfDebug(
+		"Code verifier hash: %s, provided hash %s",
+		hashStr,
+		codeStore["codeChallange"],
+	)
 
 	if codeStore["codeChallange"] != hashStr {
 		logger.PrintfWarning("Code verifier does not match code challenge: %s", code)
@@ -216,7 +222,7 @@ func (s *Service) AuthorizationCodeFlow(
 
 	accessToken, refreshToken, err := tokens.GenerateTokens(
 		s.Config,
-		s.Key,
+		s.key,
 		user.ID.String(),
 		client,
 		userScopes,
@@ -288,7 +294,7 @@ func (s *Service) ClientCredentialsFlow(
 
 	accessToken, _, err := tokens.GenerateTokens(
 		s.Config,
-		s.Key,
+		s.key,
 		client.ClientID,
 		client,
 		clientScopes,
@@ -342,7 +348,7 @@ func (s *Service) RefreshTokenFlow(
 	sessionScopes := strings.Split(session["scopes"], ",")
 	accessToken, newRefreshToken, err := tokens.GenerateTokens(
 		s.Config,
-		s.Key,
+		s.key,
 		session["subject"],
 		client,
 		sessionScopes,
