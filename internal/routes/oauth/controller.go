@@ -2,6 +2,7 @@
 package oauth
 
 import (
+	"crypto/ed25519"
 	"easyflow-oauth2-server/internal/shared/endpoint"
 	"easyflow-oauth2-server/internal/shared/errors"
 	"easyflow-oauth2-server/internal/shared/middleware"
@@ -12,17 +13,27 @@ import (
 	"slices"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 )
 
 // Controller handles OAuth2 HTTP requests.
 type Controller struct {
 	service *Service
+	key     *ed25519.PrivateKey
+}
+
+// ControllerParams holds dependencies for OAuthController.
+type ControllerParams struct {
+	fx.In
+	Service *Service
+	Key     *ed25519.PrivateKey
 }
 
 // NewOAuthController creates a new instance of OAuthController.
-func NewOAuthController(service *Service) *Controller {
+func NewOAuthController(params ControllerParams) *Controller {
 	return &Controller{
-		service: service,
+		service: params.Service,
+		key:     params.Key,
 	}
 }
 
@@ -30,7 +41,7 @@ func NewOAuthController(service *Service) *Controller {
 func (ctrl *Controller) RegisterRoutes(r *gin.RouterGroup) {
 	r.GET(
 		"/authorize",
-		middleware.SessionTokenMiddleware(ctrl.service.Config, ctrl.service.Key),
+		middleware.SessionTokenMiddleware(ctrl.service.Config, ctrl.key),
 		ctrl.Authorize,
 	)
 	r.POST("/token", ctrl.Token)

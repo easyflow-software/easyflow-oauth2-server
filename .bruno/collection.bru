@@ -1,3 +1,26 @@
 headers {
   Origin: {{ORIGIN}}
 }
+
+auth {
+  mode: oauth2
+}
+
+auth:oauth2 {
+  grant_type: authorization_code
+  callback_url: http://localhost/callback
+  authorization_url: {{OAUTH_URL}}/oauth/authorize
+  access_token_url: {{OAUTH_URL}}/oauth/token
+  refresh_token_url: 
+  client_id: test
+  client_secret: 
+  scope: test
+  state: test
+  pkce: true
+  credentials_placement: body
+  credentials_id: credentials
+  token_placement: header
+  token_header_prefix: Bearer
+  auto_fetch_token: true
+  auto_refresh_token: true
+}

@@ -15,7 +15,7 @@ import (
 	"easyflow-oauth2-server/pkg/config"
 	"easyflow-oauth2-server/pkg/logger"
 
-	cors "github.com/OnlyNico43/gin-cors"
+	cors "github.com/OnlyNico43/gin-cors/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/valkey-io/valkey-go"
 	"go.uber.org/fx"
@@ -78,7 +78,7 @@ func RegisterRoutes(lc fx.Lifecycle, params RouteParams) {
 	log := params.LoggerFactory.NewLogger("System")
 
 	// Set up CORS middleware
-	corsMiddleware := cors.CorsMiddleware(cors.Config{
+	corsMiddleware := cors.Middleware(cors.Config{
 		AllowedOrigins:   []string{params.Config.FrontendURL},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Length", "Content-Type", "Authorization"},
@@ -87,15 +87,15 @@ func RegisterRoutes(lc fx.Lifecycle, params RouteParams) {
 		MaxAge:           12 * time.Hour,
 	})
 
+	params.Router.Use(corsMiddleware)
+
 	// Register admin routes
 	adminEndpoints := params.Router.Group("/admin")
-	adminEndpoints.Use(corsMiddleware)
 	log.PrintfInfo("Registering admin endpoints")
 	params.AdminController.RegisterRoutes(adminEndpoints)
 
 	// Register auth routes
 	authEndpoints := params.Router.Group("/auth")
-	authEndpoints.Use(corsMiddleware)
 	log.PrintfInfo("Registering auth endpoints")
 	params.AuthController.RegisterRoutes(authEndpoints)
 
@@ -106,7 +106,6 @@ func RegisterRoutes(lc fx.Lifecycle, params RouteParams) {
 
 	// Register user routes
 	userEndpoints := params.Router.Group("/user")
-	userEndpoints.Use(corsMiddleware)
 	log.PrintfInfo("Registering user endpoints")
 	params.UserController.RegisterRoutes(userEndpoints)
 

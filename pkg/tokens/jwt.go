@@ -108,7 +108,7 @@ func GenerateTokens(
 ) (string, string, error) {
 	var accessTokenPayload = generateBasePayload(cfg, userID, client, sessionID)
 	accessTokenPayload.ExpiresAt = jwt.NewNumericDate(
-		time.Now().Add(time.Duration(client.AccessTokenValidDuration) * time.Microsecond),
+		time.Now().Add(time.Duration(client.AccessTokenValidDuration) * time.Second),
 	)
 	accessTokenPayload.Scopes = scopes
 

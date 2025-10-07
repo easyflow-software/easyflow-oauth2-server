@@ -60,6 +60,7 @@ func (ctrl *Controller) Login(c *gin.Context) {
 		return
 	}
 
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		ctrl.service.Config.SessionCookieName,
 		login.SessionToken,
