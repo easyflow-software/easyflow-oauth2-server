@@ -172,12 +172,6 @@ func (s *Service) AuthorizationCodeFlow(
 
 	hashStr := base64.RawURLEncoding.EncodeToString(hash[:])
 
-	logger.PrintfDebug(
-		"Code verifier hash: %s, provided hash %s",
-		hashStr,
-		codeStore["codeChallange"],
-	)
-
 	if codeStore["codeChallange"] != hashStr {
 		logger.PrintfWarning("Code verifier does not match code challenge: %s", code)
 		return nil, nil, []string{}, &errors.APIError{
