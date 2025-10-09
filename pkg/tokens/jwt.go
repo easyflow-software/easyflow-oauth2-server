@@ -36,7 +36,7 @@ const (
 // JWTTokenPayload represents the payload of a JWT token, including standard claims and custom fields.
 type JWTTokenPayload struct {
 	jwt.RegisteredClaims
-	Scopes []string  `json:"scopes,omitempty"`
+	Scopes []string  `json:"scopes"`
 	Type   TokenType `json:"type,omitempty"`
 }
 

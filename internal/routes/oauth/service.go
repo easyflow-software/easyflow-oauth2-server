@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/valkey-io/valkey-go"
 	"go.uber.org/fx"
 )
 
@@ -49,10 +48,13 @@ func NewOAuthService(deps ServiceParams) *Service {
 func (s *Service) GetClient(
 	ctx context.Context,
 	clientID string,
+	clientIP string,
 ) (*database.GetOAuthClientByClientIDRow, *errors.APIError) {
+	logger := s.GetLogger(clientIP)
 	client, err := s.Queries.GetOAuthClientByClientID(ctx, clientID)
 	if err != nil {
 		if e.Is(err, sql.ErrNoRows) {
+			logger.PrintfDebug("Failed to retrieve client with client id: %s", clientID)
 			return nil, &errors.APIError{
 				Code:    http.StatusNotFound,
 				Error:   errors.InvalidClientID,
@@ -82,37 +84,19 @@ func (s *Service) Authorize(
 
 	key := fmt.Sprintf("authorization-code:%s", code)
 
-	query := s.Valkey.B().
-		Hset().
-		Key(key).
-		FieldValue().
-		FieldValue("codeChallange", codeChallenge).
-		FieldValue("clientId", client.ClientID).
-		FieldValue("userId", userID).
-		FieldValue("scopes", strings.Join(client.Scopes, " ")).
-		Build()
-	if s.Valkey.Do(ctx, query).Error() != nil {
-		logger.PrintfError(
-			"Failed to store authorization code: %v",
-			s.Valkey.Do(ctx, query).Error(),
-		)
+	values := map[string]string{
+		"codeChallange": codeChallenge,
+		"clientId":      client.ClientID,
+		"userId":        userID,
+		"scopes":        strings.Join(client.Scopes, " "),
+	}
+
+	if err := s.CacheHset(ctx, key, values, service.WithTTL(10*time.Minute)); err != nil {
+		logger.PrintfError("Failed to store authorization code: %v", err)
 		return nil, &errors.APIError{
 			Code:    http.StatusInternalServerError,
 			Error:   errors.InternalServerError,
 			Details: "Failed to store authorization code",
-		}
-	}
-
-	query = s.Valkey.B().Expire().Key(key).Seconds(600).Build()
-	if s.Valkey.Do(ctx, query).Error() != nil {
-		logger.PrintfError(
-			"Failed to set expiration for authorization code: %v",
-			s.Valkey.Do(ctx, query).Error(),
-		)
-		return nil, &errors.APIError{
-			Code:    http.StatusInternalServerError,
-			Error:   errors.InternalServerError,
-			Details: "Failed to set expiration for authorization code",
 		}
 	}
 	return &code, nil
@@ -128,25 +112,13 @@ func (s *Service) AuthorizationCodeFlow(
 	logger := s.GetLogger(clientIP)
 	key := fmt.Sprintf("authorization-code:%s", code)
 
-	query := s.Valkey.B().Hgetall().Key(key).Cache()
-
-	res := s.Valkey.DoCache(ctx, query, 1*time.Minute)
-	if res.Error() != nil {
-		logger.PrintfError("Failed to get authorization code: %v", res.Error())
+	codeStore, err := s.CacheHgetall(ctx, key, service.WithExpiration(1*time.Minute))
+	if err != nil {
+		logger.PrintfError("Failed to get authorization code: %v", err)
 		return nil, nil, []string{}, &errors.APIError{
 			Code:    http.StatusInternalServerError,
 			Error:   errors.InternalServerError,
 			Details: "Failed to get authorization code",
-		}
-	}
-
-	codeStore, err := res.AsStrMap()
-	if err != nil {
-		logger.PrintfError("Failed to parse authorization code: %v", err)
-		return nil, nil, []string{}, &errors.APIError{
-			Code:    http.StatusInternalServerError,
-			Error:   errors.InternalServerError,
-			Details: "Failed to parse authorization code",
 		}
 	}
 
@@ -231,45 +203,25 @@ func (s *Service) AuthorizationCodeFlow(
 		}
 	}
 
-	var queries valkey.Commands
 	sessionKey := fmt.Sprintf("session:%s", refreshToken)
-	// Convert to single commands to use auto-pipelining
-	queries = append(
-		queries,
-		s.Valkey.B().
-			Hset().
-			Key(sessionKey).
-			FieldValue().
-			FieldValue("sessionID", sessionID.String()).
-			FieldValue("subject", user.ID.String()).
-			FieldValue("scopes", strings.Join(userScopes, ",")).
-			Build(),
-	)
-	queries = append(
-		queries,
-		s.Valkey.B().
-			Expire().
-			Key(sessionKey).
-			Seconds(int64(time.Duration(client.RefreshTokenValidDuration)*time.Second)).
-			Build(),
-	)
-	multiRes := s.Valkey.DoMulti(ctx, queries...)
-	for _, r := range multiRes {
-		if r.Error() != nil {
-			logger.PrintfError("Failed to store session: %v", r.Error())
-			return nil, nil, []string{}, &errors.APIError{
-				Code:    http.StatusInternalServerError,
-				Error:   errors.InternalServerError,
-				Details: "Failed to store session",
-			}
+	sessionData := map[string]string{
+		"sessionID": sessionID.String(),
+		"subject":   user.ID.String(),
+		"scopes":    strings.Join(userScopes, ","),
+	}
+
+	if err := s.CacheHset(ctx, sessionKey, sessionData, service.WithTTL(time.Duration(client.RefreshTokenValidDuration)*time.Second)); err != nil {
+		logger.PrintfError("Failed to store session: %v", err)
+		return nil, nil, []string{}, &errors.APIError{
+			Code:    http.StatusInternalServerError,
+			Error:   errors.InternalServerError,
+			Details: "Failed to store session",
 		}
 	}
 	logger.PrintfDebug("Stored session with ID: %s", sessionID.String())
 
-	destroyQuery := s.Valkey.B().Del().Key(key).Build()
-	res = s.Valkey.Do(ctx, destroyQuery)
-	if res.Error() != nil {
-		logger.PrintfError("Failed to delete authorization code: %v", res.Error())
+	if err := s.CacheDel(ctx, key); err != nil {
+		logger.PrintfError("Failed to delete authorization code: %v", err)
 	}
 	logger.PrintfDebug("Deleted authorization code: %s", code)
 
@@ -316,11 +268,9 @@ func (s *Service) RefreshTokenFlow(
 	logger := s.GetLogger(clientIP)
 	sessionKey := fmt.Sprintf("session:%s", refreshToken)
 
-	query := s.Valkey.B().Hgetall().Key(sessionKey).Build()
-
-	res := s.Valkey.Do(ctx, query)
-	if res.Error() != nil {
-		logger.PrintfError("Failed to get session: %v", res.Error())
+	session, err := s.CacheHgetall(ctx, sessionKey, service.WithoutLocalCache())
+	if err != nil {
+		logger.PrintfError("Failed to get session: %v", err)
 		return nil, nil, []string{}, &errors.APIError{
 			Code:    http.StatusInternalServerError,
 			Error:   errors.InternalServerError,
@@ -328,8 +278,7 @@ func (s *Service) RefreshTokenFlow(
 		}
 	}
 
-	session, err := res.AsStrMap()
-	if err != nil || len(session) == 0 {
+	if len(session) == 0 {
 		logger.PrintfWarning("Session not found: %s", refreshToken)
 		return nil, nil, []string{}, &errors.APIError{
 			Code:    http.StatusBadRequest,
@@ -338,8 +287,11 @@ func (s *Service) RefreshTokenFlow(
 		}
 	}
 
-	// TODO: Add check for changed session scopes and if so reprompt for login
-	sessionScopes := strings.Split(session["scopes"], ",")
+	// TODO: Add check for changed session scopes if so refuse to issue new tokens
+	sessionScopes := []string{}
+	if session["scopes"] != "" {
+		sessionScopes = strings.Split(session["scopes"], ",")
+	}
 	accessToken, newRefreshToken, err := tokens.GenerateTokens(
 		s.Config,
 		s.key,
@@ -357,37 +309,25 @@ func (s *Service) RefreshTokenFlow(
 		}
 	}
 
-	newSessionKey := fmt.Sprintf("session:%s", session["sessionID"])
-	createQuery := s.Valkey.B().Set().Key(newSessionKey).Value(session["sessionID"]).Build()
-	res = s.Valkey.Do(ctx, createQuery)
-	if res.Error() != nil {
-		logger.PrintfError("Failed to store new session: %v", res.Error())
+	newSessionKey := fmt.Sprintf("session:%s", newRefreshToken)
+	newSessionData := map[string]string{
+		"sessionID": session["sessionID"],
+		"subject":   session["subject"],
+		"scopes":    session["scopes"],
+	}
+
+	if err := s.CacheHset(ctx, newSessionKey, newSessionData, service.WithTTL(time.Duration(client.RefreshTokenValidDuration)*time.Second)); err != nil {
+		logger.PrintfError("Failed to store new session: %v", err)
 		return nil, nil, []string{}, &errors.APIError{
 			Code:    http.StatusInternalServerError,
 			Error:   errors.InternalServerError,
 			Details: "Failed to store new session",
 		}
 	}
-	logger.PrintfDebug("Stored new session with ID: %s", session["sessionID"])
-	createQuery = s.Valkey.B().
-		Expire().
-		Key(newSessionKey).
-		Seconds(int64(time.Duration(client.RefreshTokenValidDuration) * time.Second)).
-		Build()
-	res = s.Valkey.Do(ctx, createQuery)
-	if res.Error() != nil {
-		logger.PrintfError("Failed to set expiration for new session: %v", res.Error())
-		return nil, nil, []string{}, &errors.APIError{
-			Code:    http.StatusInternalServerError,
-			Error:   errors.InternalServerError,
-			Details: "Failed to set expiration for new session",
-		}
-	}
+	logger.PrintfDebug("Stored new session with refresh token: %s", newRefreshToken)
 
-	createQuery = s.Valkey.B().Del().Key(sessionKey).Build()
-	res = s.Valkey.Do(ctx, createQuery)
-	if res.Error() != nil {
-		logger.PrintfError("Failed to delete old session: %v", res.Error())
+	if err := s.CacheDel(ctx, sessionKey); err != nil {
+		logger.PrintfError("Failed to delete old session: %v", err)
 	} else {
 		logger.PrintfDebug("Deleted old session: %s", refreshToken)
 	}

@@ -151,8 +151,8 @@ SELECT
     oc.refresh_token_valid_duration,
     COALESCE(ARRAY_AGG(DISTINCT(s.name)) FILTER (WHERE s.name IS NOT NULL), ARRAY[]::TEXT[])::TEXT[] as scopes
 FROM oauth_clients oc
-JOIN oauth_clients_scopes ocs ON oc.id = ocs.oauth_client_id
-JOIN scopes s ON ocs.scope_id = s.id
+LEFT JOIN oauth_clients_scopes ocs ON oc.id = ocs.oauth_client_id
+LEFT JOIN scopes s ON ocs.scope_id = s.id
 WHERE client_id = $1
 GROUP BY
     oc.id,

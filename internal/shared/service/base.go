@@ -11,6 +11,9 @@ import (
 	"go.uber.org/fx"
 )
 
+// Option defines a functional option for configuring services.
+type Option[T any] func(*T)
+
 // BaseService provides common dependencies and functionality for all services.
 type BaseService struct {
 	Name          string
