@@ -88,6 +88,7 @@ type OauthClient struct {
 	AuthorizationCodeValidDuration int32
 	AccessTokenValidDuration       int32
 	RefreshTokenValidDuration      int32
+	OwnerUserID                    uuid.NullUUID
 }
 
 type OauthClientsScope struct {

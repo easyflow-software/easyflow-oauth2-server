@@ -67,7 +67,7 @@ func (ctrl *Controller) Authorize(c *gin.Context) {
 		return
 	}
 
-	client, err := ctrl.service.GetClient(c.Request.Context(), clientID)
+	client, err := ctrl.service.GetClient(c.Request.Context(), clientID, c.ClientIP())
 	if err != nil {
 		c.JSON(err.Code, err)
 		return
@@ -244,7 +244,8 @@ func (ctrl *Controller) Token(c *gin.Context) {
 			return
 		}
 	}
-	client, err := ctrl.service.GetClient(c.Request.Context(), clientID)
+
+	client, err := ctrl.service.GetClient(c.Request.Context(), clientID, c.ClientIP())
 	if err != nil {
 		c.JSON(err.Code, err)
 		return

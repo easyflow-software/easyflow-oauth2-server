@@ -80,7 +80,8 @@ CREATE TABLE oauth_clients (
     is_public BOOLEAN NOT NULL DEFAULT FALSE, -- True for PKCE clients
     authorization_code_valid_duration INTEGER NOT NULL DEFAULT 600, -- in seconds
     access_token_valid_duration INTEGER NOT NULL DEFAULT 900, -- in seconds
-    refresh_token_valid_duration INTEGER NOT NULL DEFAULT 604800 -- in seconds
+    refresh_token_valid_duration INTEGER NOT NULL DEFAULT 604800, -- in seconds
+    owner_user_id uuid REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TRIGGER update_oauth_clients_updated_at
