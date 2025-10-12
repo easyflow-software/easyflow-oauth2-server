@@ -19,7 +19,7 @@ var (
 func init() {
 	enLocale := en.New()
 	uni = ut.New(enLocale, enLocale)
-	validate = validator.New()
+	validate = validator.New(validator.WithRequiredStructEnabled())
 	trans, _ = uni.GetTranslator("en")
 	if err := en_lang.RegisterDefaultTranslations(validate, trans); err != nil {
 		panic("Failed to register default translations: " + err.Error())

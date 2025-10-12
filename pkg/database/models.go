@@ -84,11 +84,9 @@ type OauthClient struct {
 	Description                    sql.NullString
 	RedirectUris                   []string
 	GrantTypes                     []GrantTypes
-	IsPublic                       bool
 	AuthorizationCodeValidDuration int32
 	AccessTokenValidDuration       int32
 	RefreshTokenValidDuration      int32
-	OwnerUserID                    uuid.NullUUID
 }
 
 type OauthClientsScope struct {

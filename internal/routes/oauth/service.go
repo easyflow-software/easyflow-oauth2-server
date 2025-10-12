@@ -334,3 +334,15 @@ func (s *Service) RefreshTokenFlow(
 
 	return &accessToken, &newRefreshToken, sessionScopes, nil
 }
+
+// Register handles the dynamic client registration.
+func (s *Service) Register(
+	clientIP string,
+	_ registerRequest,
+) (*database.CreateOAuthClientRow, *errors.APIError) {
+	_ = s.GetLogger(clientIP)
+
+	// TODO: implement registration logic
+
+	return nil, nil
+}

@@ -1,10 +1,10 @@
 -- name: CreateOAuthClient :one
-INSERT INTO oauth_clients (client_id, client_secret_hash, name, description, redirect_uris, grant_types, is_public)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, client_id, name, description, redirect_uris, grant_types, is_public, created_at, updated_at;
+INSERT INTO oauth_clients (client_id, client_secret_hash, name, description, redirect_uris, grant_types)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, client_id, name, description, redirect_uris, grant_types, created_at, updated_at;
 
 -- name: GetOAuthClient :one
-SELECT id, client_id, client_secret_hash, name, description, redirect_uris, grant_types, is_public, created_at, updated_at, authorization_code_valid_duration, access_token_valid_duration, refresh_token_valid_duration, access_token_valid_duration, refresh_token_valid_duration
+SELECT id, client_id, client_secret_hash, name, description, redirect_uris, grant_types, created_at, updated_at, authorization_code_valid_duration, access_token_valid_duration, refresh_token_valid_duration, access_token_valid_duration, refresh_token_valid_duration
 FROM oauth_clients
 WHERE id = $1;
 
@@ -17,7 +17,6 @@ SELECT
     oc.description,
     oc.redirect_uris,
     oc.grant_types,
-    oc.is_public,
     oc.created_at,
     oc.updated_at,
     oc.authorization_code_valid_duration,
@@ -36,7 +35,6 @@ GROUP BY
     oc.description,
     oc.redirect_uris,
     oc.grant_types,
-    oc.is_public,
     oc.created_at,
     oc.updated_at,
     oc.authorization_code_valid_duration,
@@ -44,15 +42,15 @@ GROUP BY
     oc.refresh_token_valid_duration;
 
 -- name: ListOAuthClients :many
-SELECT id, client_id, name, description, redirect_uris, grant_types, is_public, created_at, updated_at
+SELECT id, client_id, name, description, redirect_uris, grant_types, created_at, updated_at
 FROM oauth_clients
 ORDER BY name;
 
 -- name: UpdateOAuthClient :one
 UPDATE oauth_clients
-SET name = $2, description = $3, redirect_uris = $4, grant_types = $5, is_public = $6
+SET name = $2, description = $3, redirect_uris = $4, grant_types = $5
 WHERE id = $1
-RETURNING id, client_id, name, description, redirect_uris, grant_types, is_public, created_at, updated_at;
+RETURNING id, client_id, name, description, redirect_uris, grant_types, created_at, updated_at;
 
 -- name: UpdateOAuthClientSecret :exec
 UPDATE oauth_clients

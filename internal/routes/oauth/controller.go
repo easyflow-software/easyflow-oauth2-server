@@ -251,7 +251,7 @@ func (ctrl *Controller) Token(c *gin.Context) {
 		return
 	}
 
-	if !client.IsPublic {
+	if !client.ClientSecretHash.Valid {
 		if clientSecret == "" {
 			errors.SendErrorResponse(
 				c,
@@ -403,6 +403,11 @@ func (ctrl *Controller) Token(c *gin.Context) {
 			"The grant_type is not supported",
 		)
 	}
+}
+
+// Register handles the OAuth2 dynamic client registration endpoint.
+func (ctrl *Controller) Register() {
+
 }
 
 // redirectWithError redirects the user with OAuth2 error parameters.
