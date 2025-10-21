@@ -9,17 +9,17 @@ You need to have go and pipx installed on your system for installing the needed 
 You also need docker to run the development containers for the database.
 
 ### Setup
-1. Run the `./scripts/install.sh` script to automatically install all needed tools.
+1. Run the `make setup` to automatically install all needed tools.
 2. Copy the `.env.example` file into a `.env` file and fill in missing values.
 3. Start the docker containers with `docker compose up -d`.
-4. You can now start the application with `./scripts/start.sh`.
+4. You can now start the application with `make dev`.
 
 ## Database
 
 ### Migrations
 You can create new migrations with the installed migrate tool:
 ```shell
-migrate create -ext sql -dir pkg/database/sql/migrations -seq <migration-name>
+make migration-create
 ```
 
 To apply all migrations from the command line you can use these commands:

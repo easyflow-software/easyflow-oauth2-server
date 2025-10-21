@@ -4,7 +4,7 @@ package tokens
 import (
 	"crypto/ed25519"
 	"crypto/rand"
-	"easyflow-oauth2-server/pkg/config"
+	"easyflow-oauth2-server/internal/server/config"
 	"easyflow-oauth2-server/pkg/database"
 	"errors"
 	"time"
@@ -60,7 +60,7 @@ func generateBasePayload(
 ) JWTTokenPayload {
 	return JWTTokenPayload{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:   cfg.JwtIssuer,
+			Issuer:   cfg.BaseURL,
 			Subject:  userID,
 			Audience: []string{client.Name},
 			IssuedAt: jwt.NewNumericDate(time.Now()),
@@ -78,7 +78,7 @@ func GenerateSessionToken(
 ) (string, error) {
 	var sessionTokenPayload = JWTTokenPayload{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:   cfg.JwtIssuer,
+			Issuer:   cfg.BaseURL,
 			Subject:  userID,
 			IssuedAt: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(

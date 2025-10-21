@@ -2,8 +2,8 @@
 package auth
 
 import (
+	"easyflow-oauth2-server/internal/server/config"
 	"easyflow-oauth2-server/internal/shared/endpoint"
-	"easyflow-oauth2-server/pkg/config"
 	"net/http"
 	"time"
 

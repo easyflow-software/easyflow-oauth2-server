@@ -1,0 +1,16 @@
+meta {
+  name: openid configuration
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/oauth/token/.well-known/openid-configuration
+  body: none
+  auth: none
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

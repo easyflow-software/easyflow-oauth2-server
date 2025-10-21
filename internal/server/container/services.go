@@ -2,10 +2,11 @@
 package container
 
 import (
-	"easyflow-oauth2-server/internal/routes/admin"
-	"easyflow-oauth2-server/internal/routes/auth"
-	"easyflow-oauth2-server/internal/routes/oauth"
-	"easyflow-oauth2-server/internal/routes/user"
+	"easyflow-oauth2-server/internal/server/routes/admin"
+	"easyflow-oauth2-server/internal/server/routes/auth"
+	"easyflow-oauth2-server/internal/server/routes/oauth"
+	"easyflow-oauth2-server/internal/server/routes/user"
+	"easyflow-oauth2-server/internal/server/routes/wellknown"
 
 	"go.uber.org/fx"
 )
@@ -28,5 +29,9 @@ var ServicesModule = fx.Module("services",
 		// User services
 		user.NewUserService,
 		user.NewUserController,
+
+		// Well-known services
+		wellknown.NewWellKnownService,
+		wellknown.NewWellKnownController,
 	),
 )

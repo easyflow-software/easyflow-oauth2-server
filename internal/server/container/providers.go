@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 
-	"easyflow-oauth2-server/pkg/config"
+	"easyflow-oauth2-server/internal/server/config"
 	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/logger"
 	"easyflow-oauth2-server/pkg/retry"

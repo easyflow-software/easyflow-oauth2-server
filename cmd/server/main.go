@@ -3,8 +3,8 @@ package main
 
 import (
 	"context"
-	"easyflow-oauth2-server/internal/shared/container"
-	"easyflow-oauth2-server/pkg/config"
+	"easyflow-oauth2-server/internal/server/config"
+	"easyflow-oauth2-server/internal/server/container"
 	"easyflow-oauth2-server/pkg/logger"
 	"os"
 	"os/signal"

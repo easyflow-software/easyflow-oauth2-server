@@ -3,9 +3,9 @@ package oauth
 
 import (
 	"crypto/ed25519"
+	"easyflow-oauth2-server/internal/server/middleware"
 	"easyflow-oauth2-server/internal/shared/endpoint"
 	"easyflow-oauth2-server/internal/shared/errors"
-	"easyflow-oauth2-server/internal/shared/middleware"
 	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/tokens"
 	"net/http"
@@ -251,7 +251,7 @@ func (ctrl *Controller) Token(c *gin.Context) {
 		return
 	}
 
-	if !client.ClientSecretHash.Valid {
+	if client.ClientSecretHash.Valid {
 		if clientSecret == "" {
 			errors.SendErrorResponse(
 				c,
@@ -318,7 +318,7 @@ func (ctrl *Controller) Token(c *gin.Context) {
 			return
 		}
 
-		tokenRes := tokenResponse{
+		tokenRes := TokenResponse{
 			AccessToken:           *accessToken,
 			AccessTokenExpiresIn:  int(client.AccessTokenValidDuration),
 			RefreshTokenExpiresIn: int(client.RefreshTokenValidDuration),
@@ -350,7 +350,7 @@ func (ctrl *Controller) Token(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, tokenResponse{
+		c.JSON(http.StatusOK, TokenResponse{
 			AccessToken:          *accessToken,
 			AccessTokenExpiresIn: int(client.AccessTokenValidDuration),
 			Scopes:               scopes,
@@ -387,7 +387,7 @@ func (ctrl *Controller) Token(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, tokenResponse{
+		c.JSON(http.StatusOK, TokenResponse{
 			AccessToken:           *newAccessToken,
 			AccessTokenExpiresIn:  int(client.AccessTokenValidDuration),
 			RefreshToken:          *newRefreshToken,
@@ -403,11 +403,6 @@ func (ctrl *Controller) Token(c *gin.Context) {
 			"The grant_type is not supported",
 		)
 	}
-}
-
-// Register handles the OAuth2 dynamic client registration endpoint.
-func (ctrl *Controller) Register() {
-
 }
 
 // redirectWithError redirects the user with OAuth2 error parameters.

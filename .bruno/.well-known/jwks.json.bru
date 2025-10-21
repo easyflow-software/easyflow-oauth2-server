@@ -1,0 +1,16 @@
+meta {
+  name: jwks.json
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/.well-known/jwks.json
+  body: none
+  auth: none
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

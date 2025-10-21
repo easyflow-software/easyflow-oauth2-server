@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"crypto/ed25519"
-	"easyflow-oauth2-server/pkg/config"
+	"easyflow-oauth2-server/internal/server/config"
 	"easyflow-oauth2-server/pkg/logger"
 	"easyflow-oauth2-server/pkg/tokens"
 	"net/http"

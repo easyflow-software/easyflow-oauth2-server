@@ -33,6 +33,7 @@ type Config struct {
 	Domain            string
 	Environment       Environment
 	SessionCookieName string
+	BaseURL           string
 	// Database
 	DatabaseURL    string
 	MigrationsPath string
@@ -42,7 +43,6 @@ type Config struct {
 	ValkeyPassword   string
 	ValkeyClientName string
 	// JWT
-	JwtIssuer                  string
 	JwtSessionTokenExpiryHours int    // in hours
 	JwtSecret                  string // Needs to be 32 bytes long (32 characters)
 }
@@ -192,6 +192,10 @@ func LoadDefaultConfig() (*Config, error) {
 		SessionCookieName: getEnv("SESSION_COOKIE_NAME", "session_token", func(value string) bool {
 			return value != ""
 		}, log),
+		BaseURL: getEnv("BASE_URL", "", func(value string) bool {
+			_, err := url.ParseRequestURI(value)
+			return err == nil
+		}, log),
 		// Valkey
 		ValkeyURL: getEnv("VALKEY_URL", "", func(value string) bool {
 			_, err := url.Parse(value)
@@ -226,12 +230,6 @@ func LoadDefaultConfig() (*Config, error) {
 			log,
 		),
 		// JWT
-		JwtIssuer: getEnv(
-			"JWT_ISSUER",
-			"",
-			func(value string) bool { return value != "" },
-			log,
-		),
 		JwtSessionTokenExpiryHours: getEnvInt(
 			"JWT_SESSION_TOKEN_EXPIRY_HOURS",
 			1,

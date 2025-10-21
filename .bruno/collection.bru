@@ -13,11 +13,11 @@ auth:oauth2 {
   access_token_url: {{OAUTH_URL}}/oauth/token
   refresh_token_url: 
   client_id: test-private
-  client_secret: test
+  client_secret: 
   scope: test
   state: test
   pkce: true
-  credentials_placement: basic_auth_header
+  credentials_placement: body
   credentials_id: credentials
   token_placement: header
   token_header_prefix: Bearer

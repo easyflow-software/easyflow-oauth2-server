@@ -7,21 +7,17 @@ meta {
 post {
   url: {{BASE_URL}}/oauth/token
   body: formUrlEncoded
-  auth: basic
-}
-
-auth:basic {
-  username: test
-  password: test
+  auth: none
 }
 
 body:form-urlencoded {
   grant_type: authorization_code
-  code: XONQQB6J6VHDNX76DCPYRT4SUH
+  code: XFX3W222LTSRQZ4MU5XSP5YO4W
   code_verifier: test
-  ~client_id: test
+  client_id: test
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
