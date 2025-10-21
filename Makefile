@@ -1,4 +1,4 @@
-.PHONY: help build start test tools setup dev migrate-up migrate-down migration-create lint format
+.PHONY: help build start test tools setup dev migrate-up migrate-down migration-create lint format generate
 
 help:
 	@echo "Makefile commands:"
@@ -71,3 +71,15 @@ ifeq (, $(shell which golangci-lint))
 	$(MAKE) tools
 endif
 	golangci-lint fmt
+
+generate:
+ifeq (, $(shell which sqlc))
+	@echo "sqlc not found, installing tools..."
+	$(MAKE) tools
+endif
+ifeq (, $(shell which mockery))
+	@echo "mockery not found, installing tools..."
+	$(MAKE) tools
+endif
+	sqlc generate
+	mockery
