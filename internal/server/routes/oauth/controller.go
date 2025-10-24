@@ -48,6 +48,22 @@ func (ctrl *Controller) RegisterRoutes(r *gin.RouterGroup) {
 }
 
 // Authorize handles the OAuth2 authorization endpoint.
+// @Summary OAuth2 Authorization endpoint
+// @Description Initiates the OAuth2 authorization code flow with PKCE. Requires user to be authenticated via session token.
+// @Tags OAuth2
+// @Accept json
+// @Produce json
+// @Security SessionToken
+// @Param client_id query string true "Client ID"
+// @Param redirect_uri query string false "Redirect URI (required if client has multiple registered URIs)"
+// @Param response_type query string true "Response type (must be 'code')"
+// @Param state query string true "State parameter for CSRF protection (max 255 characters)"
+// @Param code_challenge query string true "PKCE code challenge"
+// @Success 302 "Redirects to redirect_uri with authorization code and state"
+// @Failure 400 {object} errors.APIError "Invalid request parameters"
+// @Failure 401 {object} errors.APIError "Unauthorized - session token required"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Router /oauth/authorize [get].
 func (ctrl *Controller) Authorize(c *gin.Context) {
 	utils, errs := endpoint.SetupEndpoint[any](c, endpoint.WithoutBody(), endpoint.WithUser())
 	if len(errs) > 0 {
@@ -182,6 +198,22 @@ func (ctrl *Controller) Authorize(c *gin.Context) {
 }
 
 // Token handles the OAuth2 token endpoint.
+// @Summary OAuth2 Token endpoint
+// @Description Exchange authorization code for access token, refresh tokens, or use client credentials flow
+// @Tags OAuth2
+// @Accept application/x-www-form-urlencoded
+// @Produce json
+// @Security BasicAuth
+// @Param grant_type formData string true "Grant type (authorization_code, client_credentials, or refresh_token)"
+// @Param client_id formData string false "Client ID (required if not using Basic Auth)"
+// @Param code formData string false "Authorization code (required for authorization_code grant)"
+// @Param code_verifier formData string false "PKCE code verifier (required for authorization_code grant)"
+// @Param refresh_token formData string false "Refresh token (required for refresh_token grant)"
+// @Success 200 {object} TokenResponse "Token response with access token and optional refresh token"
+// @Failure 400 {object} errors.APIError "Invalid request parameters or grant type"
+// @Failure 401 {object} errors.APIError "Invalid client credentials"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Router /oauth/token [post].
 func (ctrl *Controller) Token(c *gin.Context) {
 	_, errs := endpoint.SetupEndpoint[any](c, endpoint.WithoutBody())
 	if len(errs) > 0 {

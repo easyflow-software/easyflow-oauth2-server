@@ -4,6 +4,7 @@ package auth
 import (
 	"easyflow-oauth2-server/internal/server/config"
 	"easyflow-oauth2-server/internal/shared/endpoint"
+	_ "easyflow-oauth2-server/internal/shared/errors" // imported for swagger documentation
 	"net/http"
 	"time"
 
@@ -30,6 +31,17 @@ func (ctrl *Controller) RegisterRoutes(r *gin.RouterGroup) {
 }
 
 // Register handles user registration.
+// @Summary Register a new user
+// @Description Create a new user account with email and password
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body CreateUserRequest true "User registration details"
+// @Success 201 {object} CreateUserResponse "User successfully created"
+// @Failure 400 {object} errors.APIError "Invalid request payload"
+// @Failure 409 {object} errors.APIError "Email already exists"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Router /auth/register [post].
 func (ctrl *Controller) Register(c *gin.Context) {
 	utils, errs := endpoint.SetupEndpoint[CreateUserRequest](c)
 	if len(errs) > 0 {
@@ -47,6 +59,17 @@ func (ctrl *Controller) Register(c *gin.Context) {
 }
 
 // Login handles user authentication.
+// @Summary User login
+// @Description Authenticate a user and create a session
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body LoginRequest true "Login credentials"
+// @Success 200 {object} LoginResponse "Login successful, session token set in cookie"
+// @Failure 400 {object} errors.APIError "Invalid request payload"
+// @Failure 401 {object} errors.APIError "Invalid credentials"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Router /auth/login [post].
 func (ctrl *Controller) Login(c *gin.Context) {
 	utils, errs := endpoint.SetupEndpoint[LoginRequest](c)
 	if len(errs) > 0 {
@@ -79,6 +102,15 @@ func (ctrl *Controller) Login(c *gin.Context) {
 }
 
 // Logout handles user logout.
+// @Summary User logout
+// @Description Log out the current user and clear session
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Security SessionToken
+// @Success 204 "Logout successful"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Router /auth/logout [delete].
 func (ctrl *Controller) Logout(c *gin.Context) {
 	_, errs := endpoint.SetupEndpoint[any](c, endpoint.WithoutBody())
 	if len(errs) > 0 {

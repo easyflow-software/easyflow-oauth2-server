@@ -26,6 +26,14 @@ func (ctrl *Controller) RegisterRoutes(r *gin.RouterGroup) {
 }
 
 // GetSystemInfo handles requests for system information.
+// @Summary Get system information
+// @Description Retrieve system information including version and health status
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "System information"
+// @Failure 500 {object} map[string]interface{} "Failed to retrieve system info"
+// @Router /admin/system-info [get].
 func (ctrl *Controller) GetSystemInfo(c *gin.Context) {
 	systemInfo, err := ctrl.service.GetSystemInfo(c.ClientIP())
 	if err != nil {
@@ -37,6 +45,14 @@ func (ctrl *Controller) GetSystemInfo(c *gin.Context) {
 }
 
 // GetStats handles requests for system statistics.
+// @Summary Get system statistics
+// @Description Retrieve system statistics including user, client, and session counts
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "System statistics"
+// @Failure 500 {object} map[string]interface{} "Failed to retrieve stats"
+// @Router /admin/stats [get].
 func (ctrl *Controller) GetStats(c *gin.Context) {
 	stats, err := ctrl.service.GetStats(c.ClientIP())
 	if err != nil {

@@ -6,15 +6,20 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"net/url"
 	"time"
 
 	"easyflow-oauth2-server/internal/server/config"
+	"easyflow-oauth2-server/internal/server/docs"
 	"easyflow-oauth2-server/internal/server/routes/admin"
 	"easyflow-oauth2-server/internal/server/routes/auth"
 	"easyflow-oauth2-server/internal/server/routes/oauth"
 	"easyflow-oauth2-server/internal/server/routes/user"
 	"easyflow-oauth2-server/internal/server/routes/wellknown"
 	"easyflow-oauth2-server/pkg/logger"
+
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	cors "github.com/OnlyNico43/gin-cors/v2"
 	"github.com/gin-gonic/gin"
@@ -119,6 +124,15 @@ func RegisterRoutes(lc fx.Lifecycle, params RouteParams) {
 	wellKnownEndpoints := params.Router.Group("/.well-known")
 	log.PrintfInfo("Registering .well-known endpoints")
 	params.WellKnownController.RegisterRoutes(wellKnownEndpoints)
+
+	// Setup Swagger
+	log.PrintfInfo("Setting up Swagger at %s", params.Config.BaseURL+"/swagger/index.html")
+	base, err := url.Parse(params.Config.BaseURL)
+	if err != nil {
+		log.PrintfError("Invalid base URL for Swagger: %v", err)
+	}
+	docs.SwaggerInfo.Host = base.Host
+	params.Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Create HTTP server
 	server := &http.Server{

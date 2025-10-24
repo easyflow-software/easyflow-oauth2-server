@@ -13,6 +13,7 @@ help:
 	@echo "  migration-create  Create a new database migration (usage: make migration-create NAME=<migration_name>)"
 	@echo "  lint              Run linter on the codebase"
 	@echo "  format            Format the codebase"
+	@echo "  generate          Generate code (sqlc, mockery, swagger)"
 
 build:
 	go build -o bin/server cmd/server/main.go
@@ -81,5 +82,10 @@ ifeq (, $(shell which mockery))
 	@echo "mockery not found, installing tools..."
 	$(MAKE) tools
 endif
+ifeq (, $(shell which swag))
+	@echo "swag not found, installing tools..."
+	$(MAKE) tools
+endif
 	sqlc generate
 	mockery
+	swag init -g cmd/server/main.go -o internal/server/docs --parseDependency --parseInternal

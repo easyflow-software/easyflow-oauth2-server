@@ -1,4 +1,26 @@
 // Package main implements the entrypoint for the OAuth2 server application.
+//
+// @title Easyflow OAuth2 Server API
+// @version 1.0
+// @description OAuth2 server implementation following RFC 6749 with early adaptation for OAuth2.1
+// @termsOfService http://swagger.io/terms/
+//
+// @contact.name API Support
+// @contact.email support@easyflow.com
+//
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+//
+// @host localhost:8080
+// @BasePath /
+//
+// @securityDefinitions.apikey SessionToken
+// @in cookie
+// @name session_token
+// @description Session token for authenticated users
+//
+// @securityDefinitions.basic BasicAuth
+// @description Basic authentication for OAuth2 client credentials
 package main
 
 import (

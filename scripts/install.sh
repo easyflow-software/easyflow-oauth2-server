@@ -39,6 +39,10 @@ go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 echo -e "${BLUE}Installing mockery...${NC}"
 go install github.com/vektra/mockery/v3@v3.5.5
 
+# Install swag
+echo -e "${BLUE}Installing swag...${NC}"
+go install github.com/swaggo/swag/cmd/swag@latest
+
 # Install golangci-lint
 echo -e "${BLUE}Installing golangci-lint...${NC}"
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.5.0

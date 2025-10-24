@@ -41,3 +41,65 @@ If you create new migrations or create/update queries you need to run this comma
 ```shell
 sqlc generate
 ```
+
+## API Documentation
+
+This project uses [Swagger/OpenAPI](https://swagger.io/) for API documentation. The documentation is automatically generated from code annotations using [swaggo/swag](https://github.com/swaggo/swag).
+
+### Viewing the Documentation
+
+When the server is running, you can access the interactive Swagger UI at:
+```
+http://localhost:8080/swagger/index.html
+```
+
+The Swagger UI allows you to:
+- Browse all available API endpoints
+- View request/response schemas
+- Try out API calls directly from the browser
+- See authentication requirements
+
+### Generating Documentation
+
+The API documentation is automatically generated when you run:
+```shell
+make generate
+```
+
+This command will:
+1. Generate sqlc database code
+2. Generate mockery mocks
+3. Generate Swagger documentation from code annotations
+
+The generated Swagger files are located in `internal/server/docs/`:
+- `docs.go` - Go code that embeds the documentation
+- `swagger.json` - OpenAPI specification in JSON format
+- `swagger.yaml` - OpenAPI specification in YAML format
+
+### Adding Documentation to New Endpoints
+
+To document a new API endpoint, add Swagger annotations above your handler function:
+
+```go
+// @Summary      Short description
+// @Description  Detailed description
+// @Tags         tag-name
+// @Accept       json
+// @Produce      json
+// @Param        id path int true "User ID"
+// @Success      200 {object} ResponseType
+// @Failure      400 {object} errors.APIError
+// @Router       /path/{id} [get]
+func YourHandler(c *gin.Context) {
+    // handler code
+}
+```
+
+After adding annotations, run `make generate` to update the documentation.
+
+**Note:** Files that reference the `errors.APIError` type in Swagger annotations must include a blank import:
+```go
+import (
+    _ "easyflow-oauth2-server/internal/shared/errors" // imported for swagger documentation
+)
+```

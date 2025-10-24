@@ -39,13 +39,13 @@ const (
 // APIError represents a standardized error response for the API.
 type APIError struct {
 	// Code represents the HTTP status code
-	Code int `json:"code"`
+	Code int `json:"code" example:"400"` // HTTP status code
 
 	// Error represents a predefined error code from the enum package
-	Error ErrorCode `json:"error"`
+	Error ErrorCode `json:"error" example:"INVALID_REQUEST_BODY"` // Error code
 
 	// Details contains additional error information (optional)
-	Details any `json:"details,omitempty"`
+	Details any `json:"details,omitempty"` // Additional error details (optional)
 }
 
 // SendErrorResponse sends a standardized error response using the Gin context.

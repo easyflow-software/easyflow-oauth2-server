@@ -1,0 +1,649 @@
+basePath: /
+definitions:
+  easyflow-oauth2-server_internal_shared_errors.APIError:
+    properties:
+      code:
+        description: Code represents the HTTP status code
+        example: 400
+        type: integer
+      details:
+        description: Details contains additional error information (optional)
+      error:
+        allOf:
+        - $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.ErrorCode'
+        description: Error represents a predefined error code from the enum package
+        example: INVALID_REQUEST_BODY
+    type: object
+  easyflow-oauth2-server_internal_shared_errors.ErrorCode:
+    enum:
+    - UNAUTHORIZED
+    - NOT_ALLOWED
+    - NOT_FOUND
+    - ALREADY_EXISTS
+    - INTERNAL_SERVER_ERROR
+    - MISSING_SESSION_TOKEN
+    - INVALID_SESSION_TOKEN
+    - MISSING_CLIENT_ID
+    - INVALID_CLIENT_ID
+    - MISSING_CLIENT_SECRET
+    - INVALID_CLIENT_SECRET
+    - MISSING_CODE_CHALLENGE
+    - MISSING_STATE
+    - INVALID_STATE
+    - MISSING_REDIRECT_URI
+    - INVALID_REDIRECT_URI
+    - INVALID_CONTENT_TYPE
+    - INVALID_REQUEST_BODY
+    - MISSING_GRANT_TYPE
+    - INVALID_GRANT_TYPE
+    - MISSING_CODE
+    - INVALID_CODE
+    - MISSING_CODE_VERIFIER
+    - INVALID_CODE_VERIFIER
+    - MISSING_REFRESH_TOKEN
+    - INVALID_REFRESH_TOKEN
+    type: string
+    x-enum-varnames:
+    - Unauthorized
+    - NotAllowed
+    - NotFound
+    - AlreadyExists
+    - InternalServerError
+    - MissingSessionToken
+    - InvalidSessionToken
+    - MissingClientID
+    - InvalidClientID
+    - MissingClientSecret
+    - InvalidClientSecret
+    - MissingCodeChallenge
+    - MissingState
+    - InvalidState
+    - MissingRedirectURI
+    - InvalidRedirectURI
+    - InvalidContentType
+    - InvalidRequestBody
+    - MissingGrantType
+    - InvalidGrantType
+    - MissingCode
+    - InvalidCode
+    - MissingCodeVerifier
+    - InvalidCodeVerifier
+    - MissingRefreshToken
+    - InvalidRefreshToken
+  internal_server_routes_auth.CreateUserRequest:
+    properties:
+      email:
+        description: User's email address
+        example: user@example.com
+        type: string
+      first_name:
+        description: FirstName and LastName are optional fields
+        example: John
+        type: string
+      last_name:
+        description: User's last name (optional)
+        example: Doe
+        type: string
+      password:
+        description: User's password (minimum 8 characters)
+        example: securePassword123
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  internal_server_routes_auth.CreateUserResponse:
+    properties:
+      email:
+        description: User's email address
+        example: user@example.com
+        type: string
+      first_name:
+        description: User's first name
+        example: John
+        type: string
+      id:
+        description: User's unique identifier
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      last_name:
+        description: User's last name
+        example: Doe
+        type: string
+    type: object
+  internal_server_routes_auth.LoginRequest:
+    properties:
+      email:
+        description: User's email address
+        example: user@example.com
+        type: string
+      password:
+        description: User's password
+        example: securePassword123
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  internal_server_routes_auth.LoginResponse:
+    properties:
+      expiresIn:
+        description: Token expiration time in seconds
+        example: 3600
+        type: integer
+      session_token:
+        description: JWT session token
+        example: eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  internal_server_routes_oauth.TokenResponse:
+    properties:
+      access_token:
+        description: OAuth2 access token
+        example: eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...
+        type: string
+      expires_in:
+        description: Lifetime in seconds of the access token
+        example: 3600
+        type: integer
+      refresh_token:
+        description: OAuth2 refresh token (optional)
+        example: eyJhbGciOiJFZERTQSIsInR5cCI6...
+        type: string
+      refresh_token_expires_in:
+        description: Lifetime in seconds of the refresh token (optional)
+        example: 86400
+        type: integer
+      scopes:
+        description: Granted scopes
+        example:
+        - read
+        - write
+        items:
+          type: string
+        type: array
+    type: object
+  internal_server_routes_wellknown.JWK:
+    properties:
+      alg:
+        description: Algorithm (e.g., "EdDSA")
+        example: EdDSA
+        type: string
+      crv:
+        description: Curve (e.g., "Ed25519")
+        example: Ed25519
+        type: string
+      e:
+        description: Exponent (for RSA)
+        type: string
+      kid:
+        description: Key ID
+        example: key-1
+        type: string
+      kty:
+        description: Key Type (e.g., "OKP" for Octet string key pairs)
+        example: OKP
+        type: string
+      "n":
+        description: Modulus (for RSA)
+        type: string
+      use:
+        description: Public Key Use (e.g., "sig" for signature)
+        example: sig
+        type: string
+      x:
+        description: X Coordinate (base64url encoded)
+        example: 11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo
+        type: string
+    type: object
+  internal_server_routes_wellknown.JWKSet:
+    properties:
+      keys:
+        description: Array of JSON Web Keys
+        items:
+          $ref: '#/definitions/internal_server_routes_wellknown.JWK'
+        type: array
+    type: object
+  internal_server_routes_wellknown.OAuth2Metadata:
+    properties:
+      authorization_endpoint:
+        description: Authorization endpoint URL
+        example: https://auth.easyflow.com/oauth/authorize
+        type: string
+      code_challenge_methods_supported:
+        description: Supported PKCE code challenge methods
+        example:
+        - S256
+        items:
+          type: string
+        type: array
+      grant_types_supported:
+        description: Supported OAuth2 grant types
+        example:
+        - authorization_code
+        - refresh_token
+        items:
+          type: string
+        type: array
+      introspection_endpoint:
+        description: Token introspection endpoint
+        example: https://auth.easyflow.com/oauth/introspect
+        type: string
+      introspection_endpoint_auth_methods_supported:
+        description: Supported introspection endpoint auth methods
+        example:
+        - client_secret_basic
+        items:
+          type: string
+        type: array
+      issuer:
+        description: OAuth2 issuer identifier
+        example: https://auth.easyflow.com
+        type: string
+      jwks_uri:
+        description: JSON Web Key Set URI
+        example: https://auth.easyflow.com/.well-known/jwks.json
+        type: string
+      op_policy_uri:
+        description: Operator policy URI
+        example: https://easyflow.com/policy
+        type: string
+      op_tos_uri:
+        description: Operator terms of service URI
+        example: https://easyflow.com/tos
+        type: string
+      registration_endpoint:
+        description: Dynamic client registration endpoint
+        example: https://auth.easyflow.com/oauth/register
+        type: string
+      response_modes_supported:
+        description: Supported response modes
+        example:
+        - query
+        - fragment
+        items:
+          type: string
+        type: array
+      response_types_supported:
+        description: Supported OAuth2 response types
+        example:
+        - code
+        items:
+          type: string
+        type: array
+      revocation_endpoint:
+        description: Token revocation endpoint
+        example: https://auth.easyflow.com/oauth/revoke
+        type: string
+      revocation_endpoint_auth_methods_supported:
+        description: Supported revocation endpoint auth methods
+        example:
+        - client_secret_basic
+        items:
+          type: string
+        type: array
+      scopes_supported:
+        description: Supported scopes
+        example:
+        - openid
+        - profile
+        - email
+        items:
+          type: string
+        type: array
+      service_documentation:
+        description: Service documentation URL
+        example: https://docs.easyflow.com
+        type: string
+      subject_types_supported:
+        description: Supported subject types
+        example:
+        - public
+        items:
+          type: string
+        type: array
+      token_endpoint:
+        description: Token endpoint URL
+        example: https://auth.easyflow.com/oauth/token
+        type: string
+      token_endpoint_auth_methods_supported:
+        description: Supported token endpoint authentication methods
+        example:
+        - client_secret_basic
+        - client_secret_post
+        items:
+          type: string
+        type: array
+      token_endpoint_auth_signing_alg_values_supported:
+        description: Supported signing algorithms for token endpoint auth
+        example:
+        - RS256
+        - ES256
+        items:
+          type: string
+        type: array
+      ui_locales_supported:
+        description: Supported UI locales
+        example:
+        - en-US
+        - de-DE
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@easyflow.com
+    name: API Support
+  description: Basic authentication for OAuth2 client credentials
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Easyflow OAuth2 Server API
+  version: "1.0"
+paths:
+  /.well-known/jwks.json:
+    get:
+      consumes:
+      - application/json
+      description: Returns the JSON Web Key Set (JWKS) for token verification following
+        RFC 7517
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JSON Web Key Set
+          schema:
+            $ref: '#/definitions/internal_server_routes_wellknown.JWKSet'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+      summary: Get JSON Web Key Set
+      tags:
+      - Well-Known
+  /.well-known/oauth-authorization-server:
+    get:
+      consumes:
+      - application/json
+      description: Returns OAuth 2.0 Authorization Server Metadata following RFC 8414
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OAuth2 server metadata
+          schema:
+            $ref: '#/definitions/internal_server_routes_wellknown.OAuth2Metadata'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+      summary: Get OAuth2 Authorization Server Metadata
+      tags:
+      - Well-Known
+  /.well-known/openid-configuration:
+    get:
+      consumes:
+      - application/json
+      description: Returns OAuth 2.0 Authorization Server Metadata following RFC 8414
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OAuth2 server metadata
+          schema:
+            $ref: '#/definitions/internal_server_routes_wellknown.OAuth2Metadata'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+      summary: Get OAuth2 Authorization Server Metadata
+      tags:
+      - Well-Known
+  /admin/stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve system statistics including user, client, and session
+        counts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: System statistics
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to retrieve stats
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get system statistics
+      tags:
+      - Admin
+  /admin/system-info:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve system information including version and health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: System information
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to retrieve system info
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get system information
+      tags:
+      - Admin
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and create a session
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_server_routes_auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful, session token set in cookie
+          schema:
+            $ref: '#/definitions/internal_server_routes_auth.LoginResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+      summary: User login
+      tags:
+      - Authentication
+  /auth/logout:
+    delete:
+      consumes:
+      - application/json
+      description: Log out the current user and clear session
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Logout successful
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+      security:
+      - SessionToken: []
+      summary: User logout
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with email and password
+      parameters:
+      - description: User registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_server_routes_auth.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User successfully created
+          schema:
+            $ref: '#/definitions/internal_server_routes_auth.CreateUserResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+        "409":
+          description: Email already exists
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+      summary: Register a new user
+      tags:
+      - Authentication
+  /oauth/authorize:
+    get:
+      consumes:
+      - application/json
+      description: Initiates the OAuth2 authorization code flow with PKCE. Requires
+        user to be authenticated via session token.
+      parameters:
+      - description: Client ID
+        in: query
+        name: client_id
+        required: true
+        type: string
+      - description: Redirect URI (required if client has multiple registered URIs)
+        in: query
+        name: redirect_uri
+        type: string
+      - description: Response type (must be 'code')
+        in: query
+        name: response_type
+        required: true
+        type: string
+      - description: State parameter for CSRF protection (max 255 characters)
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: PKCE code challenge
+        in: query
+        name: code_challenge
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirects to redirect_uri with authorization code and state
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+        "401":
+          description: Unauthorized - session token required
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+      security:
+      - SessionToken: []
+      summary: OAuth2 Authorization endpoint
+      tags:
+      - OAuth2
+  /oauth/token:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Exchange authorization code for access token, refresh tokens, or
+        use client credentials flow
+      parameters:
+      - description: Grant type (authorization_code, client_credentials, or refresh_token)
+        in: formData
+        name: grant_type
+        required: true
+        type: string
+      - description: Client ID (required if not using Basic Auth)
+        in: formData
+        name: client_id
+        type: string
+      - description: Authorization code (required for authorization_code grant)
+        in: formData
+        name: code
+        type: string
+      - description: PKCE code verifier (required for authorization_code grant)
+        in: formData
+        name: code_verifier
+        type: string
+      - description: Refresh token (required for refresh_token grant)
+        in: formData
+        name: refresh_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token response with access token and optional refresh token
+          schema:
+            $ref: '#/definitions/internal_server_routes_oauth.TokenResponse'
+        "400":
+          description: Invalid request parameters or grant type
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+        "401":
+          description: Invalid client credentials
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+      security:
+      - BasicAuth: []
+      summary: OAuth2 Token endpoint
+      tags:
+      - OAuth2
+securityDefinitions:
+  BasicAuth:
+    type: basic
+  SessionToken:
+    description: Session token for authenticated users
+    in: cookie
+    name: session_token
+    type: apiKey
+swagger: "2.0"
