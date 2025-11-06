@@ -6,7 +6,7 @@ dir: "{{.InterfaceDir}}/mocks"
 filename: "{{.Mock}}{{.InterfaceName}}.go"
 pkgname: "{{.SrcPackageName}}_mocks"
 packages:
-  easyflow-oauth2-server/pkg/database:
+  easyflow-oauth2-server/internal/database:
     config:
       all: false
     interfaces:

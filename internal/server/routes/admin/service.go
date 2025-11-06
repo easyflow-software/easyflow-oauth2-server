@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"easyflow-oauth2-server/internal/shared/service"
+	"easyflow-oauth2-server/internal/service"
 
 	"go.uber.org/fx"
 )

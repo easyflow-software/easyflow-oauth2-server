@@ -6,7 +6,7 @@ package database_mocks
 
 import (
 	"context"
-	"easyflow-oauth2-server/pkg/database"
+	"easyflow-oauth2-server/internal/database"
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"

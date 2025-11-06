@@ -2,8 +2,8 @@
 package endpoint
 
 import (
-	"easyflow-oauth2-server/internal/shared/errors"
-	"easyflow-oauth2-server/pkg/tokens"
+	"easyflow-oauth2-server/internal/errors"
+	"easyflow-oauth2-server/internal/tokens"
 	e "errors"
 	"net/http"
 

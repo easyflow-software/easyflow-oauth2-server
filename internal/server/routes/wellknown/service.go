@@ -3,8 +3,8 @@ package wellknown
 import (
 	"context"
 	"crypto/ed25519"
-	"easyflow-oauth2-server/internal/shared/service"
-	"easyflow-oauth2-server/pkg/database"
+	"easyflow-oauth2-server/internal/database"
+	"easyflow-oauth2-server/internal/service"
 	"encoding/base64"
 	"fmt"
 
