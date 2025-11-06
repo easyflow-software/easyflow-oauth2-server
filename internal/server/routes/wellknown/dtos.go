@@ -1,6 +1,6 @@
 package wellknown
 
-import "easyflow-oauth2-server/pkg/database"
+import "easyflow-oauth2-server/internal/database"
 
 // OAuth2Metadata represents the OAuth 2.0 Authorization Server Metadata
 // as defined in RFC 8414.
