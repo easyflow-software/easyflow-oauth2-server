@@ -1,5 +1,14 @@
 .PHONY: help build start test tools setup dev migrate-up migrate-down migration-create lint format generate
 
+# Function to check if a command exists and install tools if not
+# Usage: $(call check-command,command-name)
+define check-command
+	@if ! command -v $(1) >/dev/null 2>&1; then \
+		echo "$(1) not found, installing tools..."; \
+		$(MAKE) tools; \
+	fi
+endef
+
 help:
 	@echo "Makefile commands:"
 	@echo "  build             Build the server binary"
@@ -32,60 +41,33 @@ setup: tools
 	go mod download
 
 dev:
-ifeq (, $(shell which reflex))
-	@echo "reflex not found, installing tools..."
-	$(MAKE) tools
-endif
+	$(call check-command,reflex)
 	reflex -r '^cmd/(.*?).*|.env|pkg/(.*?).*|internal/(.*?).*$$' -s -- go run cmd/server/main.go
 
 migrate-up:
-ifeq (, $(shell which migrate))
-	@echo "migrate not found, installing tools..."
-	$(MAKE) tools
-endif
+	$(call check-command,migrate)
 	@. .env && migrate -path $$MIGRATIONS_PATH -database $$DATABASE_URL up
 
 migrate-down:
-ifeq (, $(shell which migrate))
-	@echo "migrate not found, installing tools..."
-	$(MAKE) tools
-endif
+	$(call check-command,migrate)
 	@. .env && migrate -path $$MIGRATIONS_PATH -database $$DATABASE_URL down -all
 
 migration-create:
-ifeq (, $(shell which migrate))
-	@echo "migrate not found, installing tools..."
-	$(MAKE) tools
-endif
+	$(call check-command,migrate)
 	migrate create -ext sql -dir pkg/database/sql/migrations -seq $(NAME)
 
 lint:
-ifeq (, $(shell which golangci-lint))
-	@echo "golangci-lint not found, installing tools..."
-	$(MAKE) tools
-endif
+	$(call check-command,golangci-lint)
 	golangci-lint run --fix
 
 format:
-ifeq (, $(shell which golangci-lint))
-	@echo "golangci-lint not found, installing tools..."
-	$(MAKE) tools
-endif
+	$(call check-command,golangci-lint)
 	golangci-lint fmt
 
 generate:
-ifeq (, $(shell which sqlc))
-	@echo "sqlc not found, installing tools..."
-	$(MAKE) tools
-endif
-ifeq (, $(shell which mockery))
-	@echo "mockery not found, installing tools..."
-	$(MAKE) tools
-endif
-ifeq (, $(shell which swag))
-	@echo "swag not found, installing tools..."
-	$(MAKE) tools
-endif
+	$(call check-command,sqlc)
+	$(call check-command,mockery)
+	$(call check-command,swag)
 	sqlc generate
 	mockery
 	swag init -g cmd/server/main.go -o internal/server/docs --parseDependency --parseInternal

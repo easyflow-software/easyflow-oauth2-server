@@ -120,7 +120,7 @@ func (ctrl *Controller) Logout(c *gin.Context) {
 
 	c.SetCookie(
 		ctrl.service.Config.SessionCookieName,
-		"value string",
+		"",
 		-1,
 		"/",
 		ctrl.service.Config.Domain,

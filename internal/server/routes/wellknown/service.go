@@ -63,15 +63,8 @@ func (s *Service) GetOAuth2Metadata(ctx context.Context, clientIP string) *OAuth
 		ResponseTypesSupported: []string{
 			"code",
 		},
-		GrantTypesSupported: []string{
-			string(database.GrantTypesAuthorizationCode),
-			string(database.GrantTypesClientCredentials),
-			string(database.GrantTypesRefreshToken),
-		},
-		SubjectTypesSupported: []string{
-			"public",
-		},
-		ScopesSupported: scopeNames,
+		GrantTypesSupported: database.AllGrantTypesValues(),
+		ScopesSupported:     scopeNames,
 		TokenEndpointAuthMethodsSupported: []string{
 			"client_secret_basic",
 			"client_secret_post",
