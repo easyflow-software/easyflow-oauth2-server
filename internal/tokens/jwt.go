@@ -4,8 +4,8 @@ package tokens
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"easyflow-oauth2-server/internal/database"
 	"easyflow-oauth2-server/internal/server/config"
-	"easyflow-oauth2-server/pkg/database"
 	"errors"
 	"time"
 

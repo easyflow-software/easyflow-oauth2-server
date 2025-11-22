@@ -3,8 +3,8 @@ package service
 
 import (
 	"database/sql"
+	"easyflow-oauth2-server/internal/database"
 	"easyflow-oauth2-server/internal/server/config"
-	"easyflow-oauth2-server/pkg/database"
 	"easyflow-oauth2-server/pkg/logger"
 
 	"github.com/valkey-io/valkey-go"

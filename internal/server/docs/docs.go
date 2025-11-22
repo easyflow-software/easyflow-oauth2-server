@@ -46,7 +46,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     }
                 }
@@ -75,7 +75,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     }
                 }
@@ -104,7 +104,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     }
                 }
@@ -206,19 +206,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request payload",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     },
                     "401": {
                         "description": "Invalid credentials",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     }
                 }
@@ -249,7 +249,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     }
                 }
@@ -289,19 +289,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request payload",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     },
                     "409": {
                         "description": "Email already exists",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     }
                 }
@@ -368,19 +368,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized - session token required",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     }
                 }
@@ -447,19 +447,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters or grant type",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     },
                     "401": {
                         "description": "Invalid client credentials",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.APIError"
                         }
                     }
                 }
@@ -467,7 +467,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "easyflow-oauth2-server_internal_shared_errors.APIError": {
+        "easyflow-oauth2-server_internal_errors.APIError": {
             "type": "object",
             "properties": {
                 "code": {
@@ -482,14 +482,14 @@ const docTemplate = `{
                     "description": "Error represents a predefined error code from the enum package",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/easyflow-oauth2-server_internal_shared_errors.ErrorCode"
+                            "$ref": "#/definitions/easyflow-oauth2-server_internal_errors.ErrorCode"
                         }
                     ],
                     "example": "INVALID_REQUEST_BODY"
                 }
             }
         },
-        "easyflow-oauth2-server_internal_shared_errors.ErrorCode": {
+        "easyflow-oauth2-server_internal_errors.ErrorCode": {
             "type": "string",
             "enum": [
                 "UNAUTHORIZED",

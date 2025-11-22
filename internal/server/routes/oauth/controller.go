@@ -3,11 +3,11 @@ package oauth
 
 import (
 	"crypto/ed25519"
+	"easyflow-oauth2-server/internal/database"
+	"easyflow-oauth2-server/internal/endpoint"
+	"easyflow-oauth2-server/internal/errors"
 	"easyflow-oauth2-server/internal/server/middleware"
-	"easyflow-oauth2-server/internal/shared/endpoint"
-	"easyflow-oauth2-server/internal/shared/errors"
-	"easyflow-oauth2-server/pkg/database"
-	"easyflow-oauth2-server/pkg/tokens"
+	"easyflow-oauth2-server/internal/tokens"
 	"net/http"
 	"net/url"
 	"slices"

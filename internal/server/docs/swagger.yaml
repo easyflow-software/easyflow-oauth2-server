@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  easyflow-oauth2-server_internal_shared_errors.APIError:
+  easyflow-oauth2-server_internal_errors.APIError:
     properties:
       code:
         description: Code represents the HTTP status code
@@ -10,11 +10,11 @@ definitions:
         description: Details contains additional error information (optional)
       error:
         allOf:
-        - $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.ErrorCode'
+        - $ref: '#/definitions/easyflow-oauth2-server_internal_errors.ErrorCode'
         description: Error represents a predefined error code from the enum package
         example: INVALID_REQUEST_BODY
     type: object
-  easyflow-oauth2-server_internal_shared_errors.ErrorCode:
+  easyflow-oauth2-server_internal_errors.ErrorCode:
     enum:
     - UNAUTHORIZED
     - NOT_ALLOWED
@@ -372,7 +372,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
       summary: Get JSON Web Key Set
       tags:
       - Well-Known
@@ -391,7 +391,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
       summary: Get OAuth2 Authorization Server Metadata
       tags:
       - Well-Known
@@ -410,7 +410,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
       summary: Get OAuth2 Authorization Server Metadata
       tags:
       - Well-Known
@@ -479,15 +479,15 @@ paths:
         "400":
           description: Invalid request payload
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
         "401":
           description: Invalid credentials
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
       summary: User login
       tags:
       - Authentication
@@ -504,7 +504,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
       security:
       - SessionToken: []
       summary: User logout
@@ -532,15 +532,15 @@ paths:
         "400":
           description: Invalid request payload
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
         "409":
           description: Email already exists
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
       summary: Register a new user
       tags:
       - Authentication
@@ -583,15 +583,15 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
         "401":
           description: Unauthorized - session token required
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
       security:
       - SessionToken: []
       summary: OAuth2 Authorization endpoint
@@ -635,15 +635,15 @@ paths:
         "400":
           description: Invalid request parameters or grant type
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
         "401":
           description: Invalid client credentials
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/easyflow-oauth2-server_internal_shared_errors.APIError'
+            $ref: '#/definitions/easyflow-oauth2-server_internal_errors.APIError'
       security:
       - BasicAuth: []
       summary: OAuth2 Token endpoint

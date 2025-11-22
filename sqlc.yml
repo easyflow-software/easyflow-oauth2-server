@@ -1,14 +1,14 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "pkg/database/sql/queries"
-    schema: "pkg/database/sql/migrations"
+    queries: "internal/database/sql/queries"
+    schema: "internal/database/sql/migrations"
     database:
       uri: "postgres://postgres:password@localhost:5432/easyflow-oauth2-server?sslmode=disable"
     gen:
       go:
         package: "database"
-        out: "pkg/database"
+        out: "internal/database"
         emit_enum_valid_method: true
         emit_all_enum_values: true
         emit_empty_slices: true

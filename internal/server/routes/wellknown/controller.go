@@ -2,8 +2,8 @@
 package wellknown
 
 import (
-	"easyflow-oauth2-server/internal/shared/endpoint"
-	_ "easyflow-oauth2-server/internal/shared/errors" // imported for swagger documentation
+	"easyflow-oauth2-server/internal/endpoint"
+	_ "easyflow-oauth2-server/internal/errors" // imported for swagger documentation
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -43,8 +43,9 @@ type Config struct {
 	ValkeyPassword   string
 	ValkeyClientName string
 	// JWT
-	JwtSessionTokenExpiryHours int    // in hours
-	JwtSecret                  string // Needs to be 32 bytes long (32 characters)
+	JwtSessionTokenExpiryHours int // in hours
+	// TODO: add refresh and access token expiry times
+	JwtSecret string // Needs to be 32 bytes long (32 characters)
 }
 
 // Get an environment variable or return a default value.
