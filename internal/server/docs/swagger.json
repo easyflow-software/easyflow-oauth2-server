@@ -542,6 +542,19 @@
                 "InvalidRefreshToken"
             ]
         },
+        "easyflow-oauth2-server_pkg_database.GrantTypes": {
+            "type": "string",
+            "enum": [
+                "authorization_code",
+                "refresh_token",
+                "client_credentials"
+            ],
+            "x-enum-varnames": [
+                "GrantTypesAuthorizationCode",
+                "GrantTypesRefreshToken",
+                "GrantTypesClientCredentials"
+            ]
+        },
         "internal_server_routes_auth.CreateUserRequest": {
             "type": "object",
             "required": [
@@ -744,7 +757,7 @@
                     "description": "Supported OAuth2 grant types",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/easyflow-oauth2-server_pkg_database.GrantTypes"
                     },
                     "example": [
                         "authorization_code",
@@ -827,6 +840,17 @@
                         "client_secret_basic"
                     ]
                 },
+                "revocation_endpoint_auth_signing_alg_values_supported": {
+                    "description": "Supported signing algorithms for revocation endpoint auth",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "RS256",
+                        "ES256"
+                    ]
+                },
                 "scopes_supported": {
                     "description": "Supported scopes",
                     "type": "array",
@@ -843,16 +867,6 @@
                     "description": "Service documentation URL",
                     "type": "string",
                     "example": "https://docs.easyflow.com"
-                },
-                "subject_types_supported": {
-                    "description": "Supported subject types",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "public"
-                    ]
                 },
                 "token_endpoint": {
                     "description": "Token endpoint URL",

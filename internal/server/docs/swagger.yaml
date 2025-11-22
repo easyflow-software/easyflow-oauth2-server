@@ -70,6 +70,16 @@ definitions:
     - InvalidCodeVerifier
     - MissingRefreshToken
     - InvalidRefreshToken
+  easyflow-oauth2-server_pkg_database.GrantTypes:
+    enum:
+    - authorization_code
+    - refresh_token
+    - client_credentials
+    type: string
+    x-enum-varnames:
+    - GrantTypesAuthorizationCode
+    - GrantTypesRefreshToken
+    - GrantTypesClientCredentials
   internal_server_routes_auth.CreateUserRequest:
     properties:
       email:
@@ -224,7 +234,7 @@ definitions:
         - authorization_code
         - refresh_token
         items:
-          type: string
+          $ref: '#/definitions/easyflow-oauth2-server_pkg_database.GrantTypes'
         type: array
       introspection_endpoint:
         description: Token introspection endpoint
@@ -283,6 +293,14 @@ definitions:
         items:
           type: string
         type: array
+      revocation_endpoint_auth_signing_alg_values_supported:
+        description: Supported signing algorithms for revocation endpoint auth
+        example:
+        - RS256
+        - ES256
+        items:
+          type: string
+        type: array
       scopes_supported:
         description: Supported scopes
         example:
@@ -296,13 +314,6 @@ definitions:
         description: Service documentation URL
         example: https://docs.easyflow.com
         type: string
-      subject_types_supported:
-        description: Supported subject types
-        example:
-        - public
-        items:
-          type: string
-        type: array
       token_endpoint:
         description: Token endpoint URL
         example: https://auth.easyflow.com/oauth/token

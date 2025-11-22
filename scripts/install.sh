@@ -10,6 +10,8 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+export GOTOOLCHAIN=$(go env GOVERSION)
+
 # Check if go is installed
 if ! command -v go &> /dev/null
 then
@@ -37,7 +39,7 @@ go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 # Install mockery
 echo -e "${BLUE}Installing mockery...${NC}"
-go install github.com/vektra/mockery/v3@v3.5.5
+go install github.com/vektra/mockery/v3@v3.6.1
 
 # Install swag
 echo -e "${BLUE}Installing swag...${NC}"
