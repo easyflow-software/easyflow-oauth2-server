@@ -176,7 +176,7 @@ func LoadDefaultConfig() (*Config, error) {
 		}, log),
 		MigrationsPath: getEnv(
 			"MIGRATIONS_PATH",
-			"pkg/database/sql/migrations",
+			"internal/database/sql/migrations",
 			func(value string) bool {
 				_, err := os.Stat(value)
 				return err == nil
